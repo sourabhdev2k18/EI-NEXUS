@@ -1,0 +1,26 @@
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px; border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(17,24,32,0.9), rgba(17,24,32,0.4));
+  position: sticky; top: 0; z-index: 50; backdrop-filter: blur(8px); gap: 18px;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brandMark {
+  width: 38px; height: 38px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--amber), var(--red));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: #0A0E13; font-size: 18px;
+  box-shadow: 0 0 24px rgba(255,138,61,0.35);
+}
+.brand h1 { font-family: 'Space Grotesk', sans-serif; font-size: 19px; margin: 0; letter-spacing: 0.2px; }
+.brand h1 span { color: var(--muted); font-weight: 400; }
+.tag { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 1.2px; text-transform: uppercase; }
+.right { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; justify-content: flex-end; }
+.pill {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 6px 12px; border-radius: 20px;
+  border: 1px solid var(--line); color: var(--muted); display: flex; align-items: center; gap: 7px;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.off { background: var(--red); box-shadow: 0 0 8px var(--red); }
+@media (max-width: 900px) { .header { align-items: flex-start; flex-direction: column; } .right { justify-content: flex-start; } }

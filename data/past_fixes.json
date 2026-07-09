@@ -1,0 +1,110 @@
+[
+  {
+    "fix_id": "FIX-001",
+    "failure_mode_link": "OVERTEMP",
+    "applied_to_ticket": "TCK-1048",
+    "fix_description": "Replace heat sink with revision D (32-fin high-density design) and apply thermal interface material TIM-7 rated to 5.2 W/mK. Firmware fan-curve updated to trigger at 65C instead of 80C.",
+    "validated": true,
+    "effectiveness_score": 0.86,
+    "date_applied": "2026-06-09"
+  },
+  {
+    "fix_id": "FIX-002",
+    "failure_mode_link": "OVERTEMP",
+    "applied_to_ticket": "TCK-1049",
+    "fix_description": "Replace heat sink with revision D (32-fin high-density design) and apply thermal interface material TIM-7 rated to 5.2 W/mK. Firmware fan-curve updated to trigger at 65C instead of 80C.",
+    "validated": true,
+    "effectiveness_score": 0.94,
+    "date_applied": "2026-04-21"
+  },
+  {
+    "fix_id": "FIX-003",
+    "failure_mode_link": "OVERTEMP",
+    "applied_to_ticket": "TCK-1015",
+    "fix_description": "Replace heat sink with revision D (32-fin high-density design) and apply thermal interface material TIM-7 rated to 5.2 W/mK. Firmware fan-curve updated to trigger at 65C instead of 80C.",
+    "validated": true,
+    "effectiveness_score": 0.86,
+    "date_applied": "2026-01-23"
+  },
+  {
+    "fix_id": "FIX-004",
+    "failure_mode_link": "VIBRATION",
+    "applied_to_ticket": "TCK-1018",
+    "fix_description": "Increase bearing preload torque to 18-20 Nm per updated spec ECN-4471, switch to C3-clearance bearings, and add vibration-isolation mount (rubber durometer 70A) between chassis and motor base.",
+    "validated": true,
+    "effectiveness_score": 0.86,
+    "date_applied": "2026-03-11"
+  },
+  {
+    "fix_id": "FIX-005",
+    "failure_mode_link": "VIBRATION",
+    "applied_to_ticket": "TCK-1057",
+    "fix_description": "Increase bearing preload torque to 18-20 Nm per updated spec ECN-4471, switch to C3-clearance bearings, and add vibration-isolation mount (rubber durometer 70A) between chassis and motor base.",
+    "validated": true,
+    "effectiveness_score": 0.91,
+    "date_applied": "2026-02-05"
+  },
+  {
+    "fix_id": "FIX-006",
+    "failure_mode_link": "VIBRATION",
+    "applied_to_ticket": "TCK-1014",
+    "fix_description": "Increase bearing preload torque to 18-20 Nm per updated spec ECN-4471, switch to C3-clearance bearings, and add vibration-isolation mount (rubber durometer 70A) between chassis and motor base.",
+    "validated": true,
+    "effectiveness_score": 0.88,
+    "date_applied": "2026-02-23"
+  },
+  {
+    "fix_id": "FIX-007",
+    "failure_mode_link": "VOLTAGE",
+    "applied_to_ticket": "TCK-1013",
+    "fix_description": "Upgrade capacitor bank to 450V-rated units with 20% additional bulk capacitance, add active PFC front-end, and widen under-voltage lockout band from 190-210V to 175-210V per ECN-4489.",
+    "validated": true,
+    "effectiveness_score": 0.83,
+    "date_applied": "2026-04-11"
+  },
+  {
+    "fix_id": "FIX-008",
+    "failure_mode_link": "VOLTAGE",
+    "applied_to_ticket": "TCK-1034",
+    "fix_description": "Upgrade capacitor bank to 450V-rated units with 20% additional bulk capacitance, add active PFC front-end, and widen under-voltage lockout band from 190-210V to 175-210V per ECN-4489.",
+    "validated": true,
+    "effectiveness_score": 0.89,
+    "date_applied": "2026-01-07"
+  },
+  {
+    "fix_id": "FIX-009",
+    "failure_mode_link": "VOLTAGE",
+    "applied_to_ticket": "TCK-1053",
+    "fix_description": "Upgrade capacitor bank to 450V-rated units with 20% additional bulk capacitance, add active PFC front-end, and widen under-voltage lockout band from 190-210V to 175-210V per ECN-4489.",
+    "validated": true,
+    "effectiveness_score": 0.89,
+    "date_applied": "2026-05-23"
+  },
+  {
+    "fix_id": "FIX-010",
+    "failure_mode_link": "CURRENT",
+    "applied_to_ticket": "TCK-1001",
+    "fix_description": "Upgrade to Class H (180C) insulation system, add current-imbalance protection threshold at 8% (down from 15%), and derate continuous current rating by 10% for ambient >40C sites per design bulletin DB-118.",
+    "validated": true,
+    "effectiveness_score": 0.96,
+    "date_applied": "2026-05-13"
+  },
+  {
+    "fix_id": "FIX-011",
+    "failure_mode_link": "CURRENT",
+    "applied_to_ticket": "TCK-1030",
+    "fix_description": "Upgrade to Class H (180C) insulation system, add current-imbalance protection threshold at 8% (down from 15%), and derate continuous current rating by 10% for ambient >40C sites per design bulletin DB-118.",
+    "validated": true,
+    "effectiveness_score": 0.82,
+    "date_applied": "2026-03-10"
+  },
+  {
+    "fix_id": "FIX-012",
+    "failure_mode_link": "CURRENT",
+    "applied_to_ticket": "TCK-1048",
+    "fix_description": "Upgrade to Class H (180C) insulation system, add current-imbalance protection threshold at 8% (down from 15%), and derate continuous current rating by 10% for ambient >40C sites per design bulletin DB-118.",
+    "validated": true,
+    "effectiveness_score": 0.88,
+    "date_applied": "2026-04-18"
+  }
+]

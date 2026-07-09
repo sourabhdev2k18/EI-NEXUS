@@ -1,0 +1,35 @@
+flowchart TB
+    subgraph JUDGE_NODE["NODE: Judge / Presenter Laptop"]
+        BROWSER["Web Browser<br/>&lt;&lt;execution environment&gt;&gt;<br/>renders frontend/index.html"]
+    end
+
+    subgraph SERVER_NODE["NODE: Local Python Process (python run.py)"]
+        WSGI["Flask Dev Server<br/>&lt;&lt;container&gt;&gt;<br/>0.0.0.0:8000"]
+        TICK["Background Tick Thread<br/>&lt;&lt;process&gt;&gt;<br/>1s interval, all fleet assets"]
+        AGENT_THREAD["Autonomous Agent Thread(s)<br/>&lt;&lt;process&gt;&gt;<br/>1 per in-flight incident"]
+        MEM["In-Memory State<br/>&lt;&lt;artifact&gt;&gt;<br/>twin state, logs, TF-IDF index"]
+    end
+
+    subgraph FS_NODE["NODE: Local Filesystem"]
+        DATAFILES["data slash star dot json<br/>&lt;&lt;artifact&gt;&gt;<br/>tickets, BOM, design docs, fixes"]
+        ENVFILE[".env file<br/>&lt;&lt;artifact&gt;&gt;<br/>GEMINI_API_KEY optional"]
+    end
+
+    subgraph CLOUD["NODE: Google Cloud (optional, external)"]
+        GEMINI["Gemini API<br/>&lt;&lt;service&gt;&gt;<br/>generativelanguage.googleapis.com"]
+    end
+
+    BROWSER <-->|HTTP colon 8000, JSON over REST| WSGI
+    WSGI --> TICK
+    WSGI --> AGENT_THREAD
+    WSGI <--> MEM
+    TICK --> MEM
+    AGENT_THREAD --> MEM
+    WSGI -->|read at startup| DATAFILES
+    WSGI -->|read at startup| ENVFILE
+    WSGI -.->|HTTPS, optional, graceful fallback on failure| GEMINI
+
+    style JUDGE_NODE fill:#141B24,stroke:#4FD1E8,color:#F2F5F8
+    style SERVER_NODE fill:#141B24,stroke:#FF8A3D,color:#F2F5F8
+    style FS_NODE fill:#141B24,stroke:#8B98A8,color:#F2F5F8
+    style CLOUD fill:#0A0E13,stroke:#5B8DEF,color:#F2F5F8,stroke-dasharray: 4 3

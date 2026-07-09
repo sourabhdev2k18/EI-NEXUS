@@ -1,0 +1,58 @@
+[
+  {
+    "component_id": "MC-2201-HS",
+    "component_name": "MC-2201-HS (Heat Sink Assembly)",
+    "failure_mode_link": "OVERTEMP",
+    "design_spec_summary": "Heat sink fin density specified in design revision C is 18% below the thermal dissipation requirement for continuous duty cycles above 80% load. Thermal simulation used intermittent-duty assumptions, not continuous-duty.",
+    "current_revision": "Rev D",
+    "supplier": "Rockwell Supply Co",
+    "rated_tolerance": {
+      "temperature": "operating -20C to 85C ambient",
+      "vibration": "n/a",
+      "voltage": "n/a",
+      "current": "n/a"
+    }
+  },
+  {
+    "component_id": "MC-2201-BRG",
+    "component_name": "MC-2201-BRG (Drive Shaft Bearing Set)",
+    "failure_mode_link": "VIBRATION",
+    "design_spec_summary": "Bearing preload torque specification in the assembly drawing (12-15 Nm) is insufficient for the actual dynamic load profile measured in the field, which peaks 22% above the original design load case.",
+    "current_revision": "Rev B",
+    "supplier": "Rockwell Supply Co",
+    "rated_tolerance": {
+      "temperature": "n/a",
+      "vibration": "IEC 60068-2-6 rated to 3.0 mm/s RMS",
+      "voltage": "n/a",
+      "current": "n/a"
+    }
+  },
+  {
+    "component_id": "MC-2201-PSU",
+    "component_name": "MC-2201-PSU (Power Supply / Capacitor Bank)",
+    "failure_mode_link": "VOLTAGE",
+    "design_spec_summary": "DC bus capacitor bank was sized for nominal 400V steady-state operation without margin for grid-side sag/swell events common in this plant's electrical environment (measured +/-12% variance vs +/-5% design assumption).",
+    "current_revision": "Rev C",
+    "supplier": "Rockwell Supply Co",
+    "rated_tolerance": {
+      "temperature": "n/a",
+      "vibration": "n/a",
+      "voltage": "400V DC bus nominal, +/-5% design margin",
+      "current": "n/a"
+    }
+  },
+  {
+    "component_id": "MC-2201-WDG",
+    "component_name": "MC-2201-WDG (Stator Winding Assembly)",
+    "failure_mode_link": "CURRENT",
+    "design_spec_summary": "Winding insulation class (Class F, 155C) is under-rated for the ambient plus thermal-rise profile observed in field deployments in high-ambient sites (ambient 45C+), accelerating insulation breakdown and current leakage.",
+    "current_revision": "Rev D",
+    "supplier": "Schneider Precision",
+    "rated_tolerance": {
+      "temperature": "n/a",
+      "vibration": "n/a",
+      "voltage": "n/a",
+      "current": "rated continuous 45A, Class F insulation"
+    }
+  }
+]

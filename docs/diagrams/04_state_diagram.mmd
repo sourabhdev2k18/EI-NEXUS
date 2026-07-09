@@ -1,0 +1,31 @@
+stateDiagram-v2
+    [*] --> MONITORING
+
+    MONITORING --> DETECTED: hybrid detector finds genuine threshold breach
+    MONITORING --> MONITORING: no anomaly / auto-inject keeps demo alive
+
+    DETECTED --> DIAGNOSING: 4-tool MCP agent invoked
+
+    DIAGNOSING --> FIXING: root cause plus validated fix identified, citations attached
+
+    FIXING --> VALIDATING: fix auto-applied, no human approval
+
+    VALIDATING --> OPTIMIZING: telemetry confirmed back within nominal band
+    VALIDATING --> ESCALATED: recovery timeout (about 72s safety valve)
+
+    OPTIMIZING --> MONITORING: if 1st occurrence, log only
+    OPTIMIZING --> MONITORING: if 2nd+ occurrence, tighten threshold fleet-wide
+
+    ESCALATED --> MONITORING: logged for human engineer
+
+    note right of DETECTED
+        Rule-based threshold breach only.
+        Statistics alone never trigger a
+        full incident (false-positive guard).
+    end note
+
+    note right of OPTIMIZING
+        Threshold change applies to
+        ALL fleet assets, not just
+        the one that failed.
+    end note

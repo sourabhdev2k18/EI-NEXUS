@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  ei-nexus:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      # Simplest way to enable Gemini: uncomment and paste your key directly,
+      # or copy .env.example to .env and use `env_file:` below instead.
+      # - GEMINI_API_KEY=your_key_here
+    # Uncomment the next two lines AFTER you've created a real .env file
+    # (copy .env.example to .env first) — docker compose errors if the
+    # referenced file doesn't exist yet, so it's commented out by default.
+    # env_file:
+    #   - .env
+    volumes:
+      # Persist the SQLite database across container restarts during local
+      # testing. In a real multi-instance cloud deployment, replace this
+      # with a managed database instead (see DEPLOYMENT_GUIDE.md).
+      - ei_nexus_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  ei_nexus_data:

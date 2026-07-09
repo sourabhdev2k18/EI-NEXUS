@@ -1,0 +1,45 @@
+sequenceDiagram
+    actor U as User / Judge
+    participant UI as Frontend Dashboard
+    participant API as Flask API
+    participant TW as DigitalTwin
+    participant AD as AnomalyDetector
+    participant MCP as MCP Server (Orchestrator)
+    participant T1 as Tool 1: Ticket Search
+    participant T2 as Tool 2: BOM Lookup
+    participant T3 as Tool 3: Design-Doc RAG
+    participant T4 as Tool 4: Past-Fix Retrieval
+    participant LLM as Gemini Client
+
+    U->>UI: Click "Run 4-Tool MCP Agent"
+    UI->>API: POST /api/analyze_rca {query, use_llm}
+    API->>TW: snapshot()
+    TW-->>API: telemetry state
+    API->>AD: detect(snapshot)
+    AD-->>API: [Finding(signal, failure_mode, confidence)]
+    API->>MCP: run_rca_pipeline(query, use_llm)
+
+    MCP->>T1: tool_ticket_search(query, top_k=5)
+    T1-->>MCP: similar tickets + similarity scores
+    MCP->>MCP: infer failure_mode from top matches
+
+    MCP->>T2: tool_bom_lookup(failure_mode)
+    T2-->>MCP: BOM spec cross-reference
+
+    MCP->>T3: tool_design_doc_search(query, top_k=3)
+    T3-->>MCP: design guideline documents
+
+    MCP->>T4: tool_past_fix_retrieval(failure_mode, top_k=3)
+    T4-->>MCP: validated fixes ranked by effectiveness
+
+    alt Gemini configured and reachable
+        MCP->>LLM: synthesize_with_gemini(context)
+        LLM-->>MCP: cited narrative report
+    else No key / network / quota failure
+        MCP->>MCP: synthesize_rule_based(context)
+        Note over MCP: Never blocks the demo -\ndeterministic grounded fallback
+    end
+
+    MCP-->>API: {trace, synthesis, citations, latency_ms}
+    API-->>UI: JSON response
+    UI-->>U: Renders live reasoning trace + cited report

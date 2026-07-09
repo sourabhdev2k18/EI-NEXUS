@@ -1,0 +1,22 @@
+.panel {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), transparent 60%);
+  opacity: 0.7;
+}
+.head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+.head h3 { font-family: 'Space Grotesk', sans-serif; font-size: 14px; margin: 0; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text); }
+.eyebrow { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; text-align: right; }

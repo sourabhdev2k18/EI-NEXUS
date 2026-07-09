@@ -1,0 +1,27 @@
+.panel { background: linear-gradient(180deg, rgba(255,138,61,0.06), rgba(17,24,32,0.9)); border: 1px solid rgba(255,138,61,0.28); }
+.panel::before { background: linear-gradient(90deg, var(--amber), var(--cyan)); opacity: 0.9; }
+.toggleRow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.bigToggle {
+  font-family: 'Space Grotesk', sans-serif; font-size: 14.5px; font-weight: 600; padding: 12px 22px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+  cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px;
+}
+.on { background: linear-gradient(135deg, var(--amber), #E8663A); color: #0A0E13; border: none; box-shadow: 0 0 24px rgba(255,138,61,0.35); }
+.statusDot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.on .statusDot { background: #0A0E13; animation: pulse 1.2s infinite; }
+.flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-bottom: 14px; }
+.flowPair { display: inline-flex; align-items: center; gap: 4px; }
+.node { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); }
+.active { border-color: var(--amber); color: var(--amber); background: rgba(255,138,61,0.1); }
+.arrow { color: var(--line); }
+.log { background: #070A0D; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; max-height: 280px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.logEntry { padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); line-height: 1.6; }
+.logEntry:last-child { border-bottom: none; }
+.stageTag { display: inline-block; font-size: 9.5px; font-weight: 700; padding: 1px 7px; border-radius: 4px; margin-right: 8px; letter-spacing: 0.5px; }
+.stageDETECTED { background: rgba(255,92,92,0.15); color: var(--red); }
+.stageDIAGNOSING { background: rgba(79,209,232,0.15); color: var(--cyan); }
+.stageFIXING { background: rgba(255,138,61,0.15); color: var(--amber); }
+.stageVALIDATING { background: rgba(62,213,152,0.15); color: var(--green); }
+.stageOPTIMIZING { background: rgba(91,141,239,0.15); color: var(--blue); }
+.stageSYSTEM { background: rgba(124,138,154,0.15); color: var(--muted); }
+.ts { color: var(--muted); font-size: 10px; margin-right: 6px; }

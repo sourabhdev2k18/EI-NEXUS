@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+data/ei_nexus.db
+data/ei_nexus.db-wal
+data/ei_nexus.db-shm
+.git/
+.github/
+docs/diagrams/*.png
+*.md
+sprint_board/
+tests/
+.pytest_cache/

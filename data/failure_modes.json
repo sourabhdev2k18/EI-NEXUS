@@ -1,0 +1,54 @@
+{
+  "OVERTEMP": {
+    "signal": "temperature",
+    "symptoms": [
+      "motor controller housing temperature exceeded 95C during sustained load",
+      "thermal shutdown triggered after 40 minutes of continuous operation",
+      "temperature sensor reported runaway heating with no plateau",
+      "unit tripped on over-temperature fault code E-104 during peak shift",
+      "heat sink surface temperature climbed steadily despite fan operation"
+    ],
+    "component": "MC-2201-HS (Heat Sink Assembly)",
+    "root_cause": "Heat sink fin density specified in design revision C is 18% below the thermal dissipation requirement for continuous duty cycles above 80% load. Thermal simulation used intermittent-duty assumptions, not continuous-duty.",
+    "fix": "Replace heat sink with revision D (32-fin high-density design) and apply thermal interface material TIM-7 rated to 5.2 W/mK. Firmware fan-curve updated to trigger at 65C instead of 80C."
+  },
+  "VIBRATION": {
+    "signal": "vibration",
+    "symptoms": [
+      "excessive vibration detected on bearing housing, RMS above 4.5 mm/s",
+      "audible resonance and chatter reported by operator during startup ramp",
+      "vibration sensor flagged harmonic spike at 2x rotational frequency",
+      "coupling misalignment suspected after vibration trend increased over 3 weeks",
+      "bearing failure occurred after prolonged high-vibration operation"
+    ],
+    "component": "MC-2201-BRG (Drive Shaft Bearing Set)",
+    "root_cause": "Bearing preload torque specification in the assembly drawing (12-15 Nm) is insufficient for the actual dynamic load profile measured in the field, which peaks 22% above the original design load case.",
+    "fix": "Increase bearing preload torque to 18-20 Nm per updated spec ECN-4471, switch to C3-clearance bearings, and add vibration-isolation mount (rubber durometer 70A) between chassis and motor base."
+  },
+  "VOLTAGE": {
+    "signal": "voltage",
+    "symptoms": [
+      "input voltage sag below 200V detected during motor start-up inrush",
+      "voltage ripple exceeded 5% on DC bus causing intermittent resets",
+      "under-voltage lockout triggered repeatedly during grid fluctuation events",
+      "controller browned out and restarted unexpectedly during peak plant load",
+      "voltage transient spike above 480V observed on capacitor bank"
+    ],
+    "component": "MC-2201-PSU (Power Supply / Capacitor Bank)",
+    "root_cause": "DC bus capacitor bank was sized for nominal 400V steady-state operation without margin for grid-side sag/swell events common in this plant's electrical environment (measured +/-12% variance vs +/-5% design assumption).",
+    "fix": "Upgrade capacitor bank to 450V-rated units with 20% additional bulk capacitance, add active PFC front-end, and widen under-voltage lockout band from 190-210V to 175-210V per ECN-4489."
+  },
+  "CURRENT": {
+    "signal": "current",
+    "symptoms": [
+      "phase current imbalance of 14% detected across the three motor phases",
+      "overcurrent trip triggered during load transition from 40% to 90%",
+      "current sensor logged repeated spikes correlated with gearbox engagement",
+      "winding current exceeded thermal-rated continuous current by 9%",
+      "current draw increased gradually over 2 months, indicating winding degradation"
+    ],
+    "component": "MC-2201-WDG (Stator Winding Assembly)",
+    "root_cause": "Winding insulation class (Class F, 155C) is under-rated for the ambient plus thermal-rise profile observed in field deployments in high-ambient sites (ambient 45C+), accelerating insulation breakdown and current leakage.",
+    "fix": "Upgrade to Class H (180C) insulation system, add current-imbalance protection threshold at 8% (down from 15%), and derate continuous current rating by 10% for ambient >40C sites per design bulletin DB-118."
+  }
+}

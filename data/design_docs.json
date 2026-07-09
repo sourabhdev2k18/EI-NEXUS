@@ -1,0 +1,44 @@
+[
+  {
+    "doc_id": "DD-001",
+    "title": "Design Guideline \u2014 MC-2201-HS (Heat Sink Assembly)",
+    "failure_mode_link": "OVERTEMP",
+    "content": "Section 4.1: MC-2201-HS (Heat Sink Assembly) Design Rationale. Heat sink fin density specified in design revision C is 18% below the thermal dissipation requirement for continuous duty cycles above 80% load. Thermal simulation used intermittent-duty assumptions, not continuous-duty. Recommended corrective design change: Replace heat sink with revision D (32-fin high-density design) and apply thermal interface material TIM-7 rated to 5.2 W/mK. Firmware fan-curve updated to trigger at 65C instead of 80C. This guideline supersedes the original design assumption documented in the Rev B release and should be applied to all new builds and field retrofits.",
+    "revision": "2026-Q2"
+  },
+  {
+    "doc_id": "DD-002",
+    "title": "Design Guideline \u2014 MC-2201-BRG (Drive Shaft Bearing Set)",
+    "failure_mode_link": "VIBRATION",
+    "content": "Section 4.2: MC-2201-BRG (Drive Shaft Bearing Set) Design Rationale. Bearing preload torque specification in the assembly drawing (12-15 Nm) is insufficient for the actual dynamic load profile measured in the field, which peaks 22% above the original design load case. Recommended corrective design change: Increase bearing preload torque to 18-20 Nm per updated spec ECN-4471, switch to C3-clearance bearings, and add vibration-isolation mount (rubber durometer 70A) between chassis and motor base. This guideline supersedes the original design assumption documented in the Rev B release and should be applied to all new builds and field retrofits.",
+    "revision": "2026-Q2"
+  },
+  {
+    "doc_id": "DD-003",
+    "title": "Design Guideline \u2014 MC-2201-PSU (Power Supply / Capacitor Bank)",
+    "failure_mode_link": "VOLTAGE",
+    "content": "Section 4.3: MC-2201-PSU (Power Supply / Capacitor Bank) Design Rationale. DC bus capacitor bank was sized for nominal 400V steady-state operation without margin for grid-side sag/swell events common in this plant's electrical environment (measured +/-12% variance vs +/-5% design assumption). Recommended corrective design change: Upgrade capacitor bank to 450V-rated units with 20% additional bulk capacitance, add active PFC front-end, and widen under-voltage lockout band from 190-210V to 175-210V per ECN-4489. This guideline supersedes the original design assumption documented in the Rev B release and should be applied to all new builds and field retrofits.",
+    "revision": "2026-Q2"
+  },
+  {
+    "doc_id": "DD-004",
+    "title": "Design Guideline \u2014 MC-2201-WDG (Stator Winding Assembly)",
+    "failure_mode_link": "CURRENT",
+    "content": "Section 4.4: MC-2201-WDG (Stator Winding Assembly) Design Rationale. Winding insulation class (Class F, 155C) is under-rated for the ambient plus thermal-rise profile observed in field deployments in high-ambient sites (ambient 45C+), accelerating insulation breakdown and current leakage. Recommended corrective design change: Upgrade to Class H (180C) insulation system, add current-imbalance protection threshold at 8% (down from 15%), and derate continuous current rating by 10% for ambient >40C sites per design bulletin DB-118. This guideline supersedes the original design assumption documented in the Rev B release and should be applied to all new builds and field retrofits.",
+    "revision": "2026-Q2"
+  },
+  {
+    "doc_id": "DD-005",
+    "title": "General Environmental Derating Guidelines",
+    "failure_mode_link": "GENERAL",
+    "content": "All MC-2201 series controllers deployed in ambient conditions exceeding 40C, or in plants with grid voltage variance beyond +/-5%, or in high-vibration installations (near presses, stamping lines) require environmental derating per DB-118. Field engineers should check site ambient logs before RCA to rule out environmental root cause versus design defect.",
+    "revision": "2026-Q1"
+  },
+  {
+    "doc_id": "DD-006",
+    "title": "Duty Cycle Classification Standard",
+    "failure_mode_link": "GENERAL",
+    "content": "Design thermal and mechanical simulations for MC-2201 historically assumed S3 intermittent duty (40% ED). Field telemetry from 2025-2026 shows a growing share of continuous S1 duty deployments, which changes thermal and bearing load assumptions significantly and is the single largest source of repeat field failures traced back to design.",
+    "revision": "2026-Q1"
+  }
+]

@@ -1,0 +1,128 @@
+classDiagram
+    direction LR
+
+    class DigitalTwin {
+        +string asset_id
+        +string site
+        +string asset_type
+        +dict state
+        +string active_fault
+        +float fix_progress
+        +string status
+        +deque history
+        +inject_fault(mode) bool
+        +apply_fix() bool
+        +reset() void
+        +tick() void
+        +snapshot() dict
+    }
+
+    class Fleet {
+        +dict~string, DigitalTwin~ assets
+        +list roster
+        +get(asset_id) DigitalTwin
+        +default_asset_id() string
+        +tick_all() void
+        +fleet_snapshot() list
+    }
+
+    class AnomalyDetector {
+        <<module>>
+        +THRESHOLDS dict
+        +zscore_confidence(history, signal, value) float
+        +detect(snapshot) list~Finding~
+    }
+
+    class Finding {
+        +string signal
+        +float value
+        +string rule_triggered
+        +float statistical_confidence
+        +float combined_confidence
+        +string failure_mode
+        +string severity
+    }
+
+    class TfidfIndex {
+        +list documents
+        +string id_field
+        +list text_fields
+        +dict idf
+        +list doc_vectors
+        -_build() void
+        -_query_vector(query) tuple
+        +search(query, top_k, min_score) list
+    }
+
+    class MCPTools {
+        <<module>>
+        +tool_ticket_search(query, top_k) dict
+        +tool_bom_lookup(failure_mode) dict
+        +tool_design_doc_search(query, top_k) dict
+        +tool_past_fix_retrieval(failure_mode, top_k) dict
+        +TOOL_REGISTRY dict
+    }
+
+    class MCPServer {
+        <<module>>
+        +run_rca_pipeline(symptom_query, use_llm) dict
+    }
+
+    class GeminiClient {
+        <<module>>
+        +synthesize_with_gemini(context) tuple
+        +synthesize_rule_based(context) string
+        +get_diagnostics() dict
+    }
+
+    class AutonomousAgent {
+        +bool enabled
+        +bool auto_inject
+        +string state
+        +list log
+        +dict resolved_counts
+        +list resolved_incidents
+        +set busy_assets
+        +start(auto_inject) void
+        +stop() void
+        +status() dict
+        -_run_loop() void
+        -_handle_incident(twin, finding) void
+        -_tighten_threshold(signal, count, asset_id) void
+    }
+
+    class MetricsModule {
+        <<module>>
+        +run_retrieval_eval(top_k) dict
+        +compute_roi(resolved_incidents) dict
+        +record_rca_latency(ms) void
+        +rca_latency_summary() dict
+    }
+
+    class FlaskApp {
+        <<module>>
+        +GET /api/fleet
+        +GET /api/telemetry
+        +POST /api/inject_fault
+        +POST /api/apply_fix
+        +POST /api/reset
+        +POST /api/analyze_rca
+        +GET /api/autonomous/status
+        +POST /api/autonomous/start
+        +GET /api/roi
+        +GET /api/metrics
+    }
+
+    Fleet "1" o-- "4" DigitalTwin : manages
+    AutonomousAgent "1" --> "1" Fleet : monitors
+    AutonomousAgent --> AnomalyDetector : uses
+    AutonomousAgent --> MCPServer : invokes
+    AutonomousAgent --> MetricsModule : records to
+    MCPServer --> MCPTools : orchestrates
+    MCPServer --> GeminiClient : synthesizes via
+    MCPTools --> TfidfIndex : queries
+    AnomalyDetector --> Finding : produces
+    FlaskApp --> Fleet : reads/writes
+    FlaskApp --> AutonomousAgent : controls
+    FlaskApp --> MetricsModule : reads
+    FlaskApp --> MCPServer : triggers

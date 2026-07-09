@@ -1,0 +1,5 @@
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.card { background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: 9px; padding: 14px; text-align: center; }
+.value { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: var(--green); }
+.label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+@media (max-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } }

@@ -1,0 +1,60 @@
+erDiagram
+    TICKETS {
+        string ticket_id PK
+        string asset_id
+        string site
+        string failure_mode FK
+        string severity
+        string reported_date
+        string symptom_description
+        real downtime_hours
+        string component_flagged
+        int resolved
+    }
+    BOM_SPECS {
+        string component_id PK
+        string component_name
+        string failure_mode_link FK
+        string design_spec_summary
+        string current_revision
+        string supplier
+        string rated_tolerance_json
+    }
+    DESIGN_DOCS {
+        string doc_id PK
+        string title
+        string failure_mode_link FK
+        string content
+        string revision
+    }
+    PAST_FIXES {
+        string fix_id PK
+        string failure_mode_link FK
+        string applied_to_ticket FK
+        string fix_description
+        int validated
+        real effectiveness_score
+        string date_applied
+    }
+    RESOLVED_INCIDENTS {
+        int id PK
+        string asset_id
+        string failure_mode FK
+        real elapsed_seconds
+        real ts
+        string session_id
+    }
+    CHAT_MESSAGES {
+        int id PK
+        string role
+        string text
+        int used_llm
+        real ts
+        string session_id
+    }
+
+    TICKETS ||--o{ BOM_SPECS : "failure_mode_link"
+    TICKETS ||--o{ DESIGN_DOCS : "failure_mode_link"
+    TICKETS ||--o{ PAST_FIXES : "failure_mode_link"
+    TICKETS ||--o{ RESOLVED_INCIDENTS : "failure_mode (logical)"
+    PAST_FIXES }o--|| TICKETS : "applied_to_ticket"

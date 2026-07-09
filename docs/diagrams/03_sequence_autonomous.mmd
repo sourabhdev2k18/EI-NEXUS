@@ -1,0 +1,42 @@
+sequenceDiagram
+    participant BG as Background Tick Thread
+    participant AA as AutonomousAgent
+    participant FL as Fleet (4 Assets)
+    participant AD as AnomalyDetector
+    participant MCP as MCP Server
+    participant MT as Metrics Module
+
+    loop every 1.2s while enabled
+        AA->>FL: for each asset: snapshot()
+        FL-->>AA: telemetry per asset
+        AA->>AD: detect(snapshot)
+        AD-->>AA: findings (rule-triggered only are actionable)
+
+        alt genuine threshold breach found
+            AA->>AA: mark asset busy, spawn incident thread
+            activate AA
+            AA->>AA: state = DETECTED (log narrated entry)
+            AA->>MCP: run_rca_pipeline(query, use_llm=true)
+            MCP-->>AA: cited synthesis + citations
+            AA->>AA: state = DIAGNOSING (log entry)
+            AA->>FL: asset.apply_fix()
+            AA->>AA: state = FIXING (log entry)
+            loop poll until recovered or timeout
+                AA->>FL: asset.snapshot()
+                FL-->>AA: status
+            end
+            AA->>AA: state = VALIDATING (log recovery)
+            AA->>MT: record resolved incident (elapsed_seconds)
+            alt failure mode recurred >= 2x
+                AA->>AD: tighten THRESHOLDS[signal] fleet-wide
+                AA->>AA: state = OPTIMIZING (log threshold change)
+            end
+            AA->>AA: release busy lock, state = MONITORING
+            deactivate AA
+        else no breach, asset idle too long, auto_inject on
+            AA->>FL: inject_fault(random_mode)
+            Note over AA,FL: keeps a walk-away demo alive
+        end
+    end
+
+    Note over AA: Multiple incident threads can run concurrently across different assets - this is what makes it fleet-scale, not a single demo machine.

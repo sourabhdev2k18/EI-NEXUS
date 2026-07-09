@@ -1,0 +1,25 @@
+.console { background: #070A0D; border: 1px solid var(--line); border-radius: 10px; padding: 22px 20px; max-height: 540px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; margin-top: 20px; }
+.runButton { min-height: 47px; padding: 13px 20px; font-size: 14.5px; border-radius: 8px; display: inline-flex; align-items: center; gap: 0; }
+.buttonIcon { display: inline-flex; align-items: center; justify-content: center; width: 16px; margin-right: 0; font-size: 13px; line-height: 1; }
+.statusLine { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11.5px; margin-top: 10px; }
+.step { border-left: 2px solid var(--line); padding: 13px 0 14px 20px; margin-bottom: 4px; position: relative; opacity: 0; animation: slideIn 0.4s ease forwards; }
+.step::before { content: ""; position: absolute; left: -5px; top: 17px; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.title { color: var(--cyan); font-weight: 700; margin-bottom: 6px; letter-spacing: 0.2px; }
+.thought { color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+.detail { color: #9FB0C0; background: rgba(255,255,255,0.03); border-radius: 6px; padding: 10px 12px; margin-top: 8px; line-height: 1.58; }
+.latency { color: var(--green); font-size: 11px; float: right; }
+.report { background: rgba(255,138,61,0.05); border: 1px solid rgba(255,138,61,0.25); border-radius: 10px; padding: 16px 18px; margin-top: 14px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; }
+.report strong { color: var(--amber); }
+.llmTag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; padding: 2px 8px; border-radius: 12px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
+.gemini { background: rgba(79,209,232,0.15); color: var(--cyan); }
+.openai { background: rgba(62,213,152,0.15); color: var(--green); }
+.rule { background: rgba(124,138,154,0.15); color: var(--muted); }
+.fallback { font-size: 11.5px; color: var(--red); margin-top: 6px; }
+.muted { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+.citationLabel { color: var(--cyan) !important; }
+.cite { display: inline-block; background: rgba(79,209,232,0.12); color: var(--cyan); border: 1px solid rgba(79,209,232,0.3); border-radius: 4px; padding: 1px 6px; margin: 2px 3px 2px 0; font-size: 11px; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}

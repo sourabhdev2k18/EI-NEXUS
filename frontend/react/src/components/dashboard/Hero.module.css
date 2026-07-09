@@ -1,0 +1,8 @@
+.hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 22px; flex-wrap: wrap; }
+.hero h2 { font-family: 'Space Grotesk', sans-serif; font-size: 30px; margin: 0 0 6px; font-weight: 600; }
+.hero p { color: var(--muted); margin: 0; max-width: 640px; font-size: 14.5px; line-height: 1.5; }
+.hero em { color: var(--text); }
+.hero strong { color: var(--amber); }
+.impactStat { font-family: 'JetBrains Mono', monospace; text-align: right; }
+.big { font-size: 26px; color: var(--amber); font-weight: 700; }
+.small { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }

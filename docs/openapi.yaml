@@ -1,0 +1,417 @@
+openapi: 3.0.3
+info:
+  title: EI-Nexus API
+  description: >
+    Autonomous Engineering Intelligence Twin — REST API for fleet telemetry,
+    fault simulation, the 4-tool MCP root-cause agent, the autonomous
+    closed-loop agent, ARIA (chat assistant), evaluation metrics, ROI, and
+    the SQLite-backed persistence layer.
+  version: "1.3.0"
+  contact:
+    name: Team MCP Mavericks
+servers:
+  - url: http://localhost:8000
+    description: Local development server (python run.py)
+
+tags:
+  - name: Fleet & Telemetry
+  - name: RCA Agent
+  - name: Autonomous Mode
+  - name: ARIA Chatbot
+  - name: Metrics & ROI
+  - name: Database
+
+paths:
+  /api/fleet:
+    get:
+      tags: [Fleet & Telemetry]
+      summary: Fleet overview — status and top anomaly for every asset
+      responses:
+        "200":
+          description: Array of asset summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FleetAssetSummary"
+
+  /api/telemetry:
+    get:
+      tags: [Fleet & Telemetry]
+      summary: Full telemetry + history for one asset
+      parameters:
+        - name: asset_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Defaults to the first fleet asset if omitted
+      responses:
+        "200":
+          description: Telemetry snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetrySnapshot"
+
+  /api/inject_fault:
+    post:
+      tags: [Fleet & Telemetry]
+      summary: Simulate a field failure on a specific asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                asset_id: { type: string, example: "MC-2201-001" }
+                failure_mode:
+                  type: string
+                  enum: [OVERTEMP, VIBRATION, VOLTAGE, CURRENT]
+      responses:
+        "200":
+          description: Fault injected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  failure_mode: { type: string }
+                  asset_id: { type: string }
+
+  /api/apply_fix:
+    post:
+      tags: [Fleet & Telemetry]
+      summary: Manually apply the fix on a specific asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                asset_id: { type: string }
+      responses:
+        "200":
+          description: Fix applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  asset_id: { type: string }
+
+  /api/reset:
+    post:
+      tags: [Fleet & Telemetry]
+      summary: Reset the entire fleet, autonomous agent, thresholds, and ARIA history
+      responses:
+        "200":
+          description: Reset complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { ok: { type: boolean } }
+
+  /api/analyze_rca:
+    post:
+      tags: [RCA Agent]
+      summary: Run the 4-tool MCP agent once against a symptom query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: Free-text field symptom. If omitted, auto-built from the live twin's current anomaly.
+                use_llm:
+                  type: boolean
+                  default: true
+                  description: Attempt Gemini synthesis; falls back to rule-based if unavailable.
+      responses:
+        "200":
+          description: RCA result with live reasoning trace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RCAResult"
+
+  /api/rca_log:
+    get:
+      tags: [RCA Agent]
+      summary: Recent manual RCA runs (this session)
+      responses:
+        "200":
+          description: List of recent RCA log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { type: object }
+
+  /api/tools:
+    get:
+      tags: [RCA Agent]
+      summary: The 4 MCP tool schemas
+      responses:
+        "200":
+          description: Tool registry
+          content:
+            application/json:
+              schema: { type: object }
+
+  /api/gemini_status:
+    get:
+      tags: [RCA Agent]
+      summary: Gemini key presence and last-call diagnostics
+      responses:
+        "200":
+          description: Diagnostic status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gemini_configured: { type: boolean }
+                  attempted: { type: boolean }
+                  ok: { type: boolean, nullable: true }
+                  error: { type: string, nullable: true }
+                  http_status: { type: integer, nullable: true }
+
+  /api/autonomous/start:
+    post:
+      tags: [Autonomous Mode]
+      summary: Engage the closed-loop autonomous agent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auto_inject:
+                  type: boolean
+                  default: true
+                  description: Auto-simulate a fault if an asset stays nominal too long
+      responses:
+        "200":
+          description: Engaged
+          content:
+            application/json:
+              schema: { type: object, properties: { ok: { type: boolean } } }
+
+  /api/autonomous/stop:
+    post:
+      tags: [Autonomous Mode]
+      summary: Disengage autonomous mode
+      responses:
+        "200":
+          description: Disengaged
+          content:
+            application/json:
+              schema: { type: object, properties: { ok: { type: boolean } } }
+
+  /api/autonomous/status:
+    get:
+      tags: [Autonomous Mode]
+      summary: Current state, narrated log, resolved incidents (this session)
+      responses:
+        "200":
+          description: Autonomous agent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutonomousStatus"
+
+  /api/autonomous/clear_log:
+    post:
+      tags: [Autonomous Mode]
+      summary: Clear the narrated log without stopping the agent
+      responses:
+        "200":
+          description: Cleared
+          content:
+            application/json:
+              schema: { type: object, properties: { ok: { type: boolean } } }
+
+  /api/roi:
+    get:
+      tags: [Metrics & ROI]
+      summary: Live business-impact numbers computed from this session's resolved incidents
+      responses:
+        "200":
+          description: ROI figures
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ROIResult"
+
+  /api/metrics:
+    get:
+      tags: [Metrics & ROI]
+      summary: Retrieval evaluation (RAG vs. baseline) and latency percentiles
+      responses:
+        "200":
+          description: Metrics
+          content:
+            application/json:
+              schema: { type: object }
+
+  /api/chat:
+    post:
+      tags: [ARIA Chatbot]
+      summary: Ask ARIA a question about the fleet or incident history
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: { type: string, example: "what happened?" }
+                use_llm: { type: boolean, default: true }
+      responses:
+        "200":
+          description: ARIA's reply
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply: { type: string }
+                  used_llm: { type: boolean }
+                  bot_name: { type: string, example: "ARIA" }
+
+  /api/chat/history:
+    get:
+      tags: [ARIA Chatbot]
+      summary: This session's chat history
+      responses:
+        "200":
+          description: List of chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { type: object }
+
+  /api/chat/clear:
+    post:
+      tags: [ARIA Chatbot]
+      summary: Clear this session's chat history
+      responses:
+        "200":
+          description: Cleared
+          content:
+            application/json:
+              schema: { type: object, properties: { ok: { type: boolean } } }
+
+  /api/db/stats:
+    get:
+      tags: [Database]
+      summary: Row counts and file size for the SQLite-backed persistence layer
+      responses:
+        "200":
+          description: Database statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tickets: { type: integer }
+                  bom_specs: { type: integer }
+                  design_docs: { type: integer }
+                  past_fixes: { type: integer }
+                  resolved_incidents: { type: integer }
+                  chat_messages: { type: integer }
+                  db_path: { type: string }
+                  db_size_bytes: { type: integer }
+
+  /api/db/incidents/lifetime:
+    get:
+      tags: [Database]
+      summary: All resolved incidents ever recorded, across every restart — not just this session
+      responses:
+        "200":
+          description: Lifetime incident history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count: { type: integer }
+                  incidents:
+                    type: array
+                    items: { type: object }
+
+components:
+  schemas:
+    FleetAssetSummary:
+      type: object
+      properties:
+        asset_id: { type: string }
+        site: { type: string }
+        asset_type: { type: string }
+        status: { type: string, enum: [NOMINAL, WARNING, CRITICAL, RECOVERING] }
+        active_fault: { type: string, nullable: true }
+        top_anomaly: { type: object, nullable: true }
+        state: { type: object }
+
+    TelemetrySnapshot:
+      type: object
+      properties:
+        asset_id: { type: string }
+        site: { type: string }
+        state:
+          type: object
+          properties:
+            temperature: { type: number }
+            vibration: { type: number }
+            load: { type: number }
+            voltage: { type: number }
+            current: { type: number }
+            fan_speed: { type: number }
+        status: { type: string }
+        active_fault: { type: string, nullable: true }
+        history: { type: array, items: { type: object } }
+        anomalies: { type: array, items: { type: object } }
+
+    RCAResult:
+      type: object
+      properties:
+        trace: { type: array, items: { type: object }, description: "Step-by-step tool-call trace" }
+        inferred_failure_mode: { type: string }
+        mode_confidence: { type: number }
+        synthesis: { type: string }
+        llm_used: { type: boolean }
+        citations: { type: array, items: { type: string } }
+        total_latency_ms: { type: number }
+
+    AutonomousStatus:
+      type: object
+      properties:
+        enabled: { type: boolean }
+        auto_inject: { type: boolean }
+        state:
+          type: string
+          enum: [IDLE, MONITORING, DETECTED, DIAGNOSING, FIXING, VALIDATING, OPTIMIZING]
+        log: { type: array, items: { type: object } }
+        resolved_counts: { type: object }
+        resolved_incidents: { type: array, items: { type: object } }
+        busy_assets: { type: array, items: { type: string } }
+
+    ROIResult:
+      type: object
+      properties:
+        incidents_resolved: { type: integer }
+        downtime_hours_avoided: { type: number }
+        downtime_cost_avoided_usd: { type: number }
+        engineer_hours_saved: { type: number }
+        engineer_cost_saved_usd: { type: number }
+        total_savings_usd: { type: number }
+        avg_resolution_seconds: { type: number }
+        assumptions: { type: object }

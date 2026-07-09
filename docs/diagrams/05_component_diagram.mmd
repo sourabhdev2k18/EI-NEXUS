@@ -1,0 +1,58 @@
+flowchart TB
+    subgraph CLIENT["CLIENT TIER"]
+        UI["Frontend Dashboard<br/>(HTML/CSS/JS + Chart.js)<br/>&lt;&lt;component&gt;&gt;"]
+    end
+
+    subgraph API_TIER["API TIER — Flask (backend/app.py)"]
+        ROUTES["REST API Routes<br/>&lt;&lt;component&gt;&gt;"]
+    end
+
+    subgraph DOMAIN["DOMAIN TIER"]
+        TWIN["Digital Twin + Fleet<br/>(backend/twin.py)<br/>&lt;&lt;component&gt;&gt;"]
+        ANOMALY["Hybrid Anomaly Detector<br/>(backend/anomaly.py)<br/>&lt;&lt;component&gt;&gt;"]
+        AGENT["Autonomous Agent<br/>(backend/autonomous.py)<br/>&lt;&lt;component&gt;&gt;"]
+        MCP["MCP Orchestrator<br/>(backend/mcp_server.py)<br/>&lt;&lt;component&gt;&gt;"]
+        TOOLS["4 MCP Tools<br/>(backend/tools.py)<br/>&lt;&lt;component&gt;&gt;"]
+        RAG["TF-IDF RAG Engine<br/>(backend/rag.py)<br/>&lt;&lt;component&gt;&gt;"]
+        METRICS["Metrics + ROI<br/>(backend/metrics.py)<br/>&lt;&lt;component&gt;&gt;"]
+    end
+
+    subgraph SYNTH["SYNTHESIS TIER"]
+        GEMINI_CLIENT["Gemini Client<br/>(backend/gemini_client.py)<br/>&lt;&lt;component&gt;&gt;"]
+    end
+
+    subgraph DATA["DATA TIER"]
+        JSON["JSON Knowledge Base<br/>tickets · BOM · design docs · fixes<br/>&lt;&lt;datastore&gt;&gt;"]
+    end
+
+    subgraph EXTERNAL["EXTERNAL SYSTEMS"]
+        GEMINI_API["Google Gemini API<br/>&lt;&lt;external service&gt;&gt;"]
+        MCP_SDK["Real MCP SDK Server<br/>(mcp_stdio_server.py)<br/>&lt;&lt;optional interface&gt;&gt;"]
+    end
+
+    UI -->|HTTP/JSON, polling| ROUTES
+    ROUTES --> TWIN
+    ROUTES --> ANOMALY
+    ROUTES --> AGENT
+    ROUTES --> MCP
+    ROUTES --> METRICS
+
+    AGENT --> TWIN
+    AGENT --> ANOMALY
+    AGENT --> MCP
+    AGENT --> METRICS
+
+    MCP --> TOOLS
+    MCP --> GEMINI_CLIENT
+    TOOLS --> RAG
+    TOOLS --> JSON
+
+    GEMINI_CLIENT -.->|REST, optional| GEMINI_API
+    TOOLS -.->|same interface,\nreal MCP protocol| MCP_SDK
+
+    style CLIENT fill:#141B24,stroke:#4FD1E8,color:#F2F5F8
+    style API_TIER fill:#141B24,stroke:#FF8A3D,color:#F2F5F8
+    style DOMAIN fill:#141B24,stroke:#3ED598,color:#F2F5F8
+    style SYNTH fill:#141B24,stroke:#4FD1E8,color:#F2F5F8
+    style DATA fill:#141B24,stroke:#8B98A8,color:#F2F5F8
+    style EXTERNAL fill:#0A0E13,stroke:#5B8DEF,color:#F2F5F8,stroke-dasharray: 4 3

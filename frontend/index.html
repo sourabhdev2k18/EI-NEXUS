@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EI-Nexus — Root-Cause Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0A0E13;
+      --panel: #111820;
+      --panel-2: #161F29;
+      --line: #232E3B;
+      --text: #E7ECF2;
+      --muted: #7C8A9A;
+      --amber: #FF8A3D;
+      --green: #3ED598;
+      --red: #FF5C5C;
+      --cyan: #4FD1E8;
+      --blue: #5B8DEF;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    body {
+      background-image:
+        radial-gradient(circle at 15% 0%, rgba(91, 141, 239, 0.08), transparent 40%),
+        radial-gradient(circle at 85% 100%, rgba(62, 213, 152, 0.06), transparent 45%);
+      min-height: 100vh;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* ---- Top bar ---- */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17, 24, 32, 0.9), rgba(17, 24, 32, 0.4));
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--amber), var(--red));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: #0A0E13;
+      font-size: 18px;
+      box-shadow: 0 0 24px rgba(255, 138, 61, 0.35);
+    }
+
+    .brand h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 19px;
+      margin: 0;
+      letter-spacing: 0.2px;
+    }
+
+    .brand .tag {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .dot.on {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .dot.off {
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+    }
+
+    /* ---- Layout ---- */
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 28px 60px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .hero h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 30px;
+      margin: 0 0 6px;
+      font-weight: 600;
+    }
+
+    .hero p {
+      color: var(--muted);
+      margin: 0;
+      max-width: 640px;
+      font-size: 14.5px;
+      line-height: 1.5;
+    }
+
+    .impact-stat {
+      font-family: 'JetBrains Mono', monospace;
+      text-align: right;
+    }
+
+    .impact-stat .big {
+      font-size: 26px;
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .impact-stat .small {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .fleet-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width:700px) {
+      .fleet-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .fleet-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .fleet-card:hover {
+      border-color: var(--amber);
+      transform: translateY(-1px);
+    }
+
+    .fleet-card.selected {
+      border-color: var(--amber);
+      background: rgba(255, 138, 61, 0.06);
+      box-shadow: 0 0 0 1px var(--amber);
+    }
+
+    .fleet-card .fc-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .fleet-card .fc-site {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin: 2px 0 8px;
+    }
+
+    .fleet-card .fc-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      display: inline-block;
+      letter-spacing: 0.4px;
+    }
+
+    .fleet-card .fc-busy {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
+      animation: pulse 1.2s infinite;
+    }
+
+    .roi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .roi-card {
+      background: rgba(62, 213, 152, 0.05);
+      border: 1px solid rgba(62, 213, 152, 0.22);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .roi-card .v {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .roi-card .l {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .roi-note {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.6;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .usecase-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .uc-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 5px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .uc-badge.primary {
+      border-color: rgba(255, 138, 61, 0.4);
+      color: var(--amber);
+      background: rgba(255, 138, 61, 0.06);
+    }
+
+    .autonomous-panel {
+      background: linear-gradient(180deg, rgba(255, 138, 61, 0.06), rgba(17, 24, 32, 0.9));
+      border: 1px solid rgba(255, 138, 61, 0.28);
+    }
+
+    .autonomous-panel::before {
+      background: linear-gradient(90deg, var(--amber), var(--cyan));
+      opacity: 0.9;
+    }
+
+    .auto-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .big-toggle {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14.5px;
+      font-weight: 600;
+      padding: 12px 22px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .big-toggle.on {
+      background: linear-gradient(135deg, var(--amber), #E8663A);
+      color: #0A0E13;
+      border: none;
+      box-shadow: 0 0 24px rgba(255, 138, 61, 0.35);
+    }
+
+    .big-toggle .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .big-toggle.on .status-dot {
+      background: #0A0E13;
+      animation: pulse 1.2s infinite;
+    }
+
+    .state-flow {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      margin-bottom: 14px;
+    }
+
+    .state-node {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .state-node.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(255, 138, 61, 0.1);
+    }
+
+    .state-arrow {
+      color: var(--line);
+    }
+
+    .auto-log {
+      background: #070A0D;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px 16px;
+      max-height: 280px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .auto-log-entry {
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      line-height: 1.6;
+    }
+
+    .auto-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .auto-log-entry .stage-tag {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 4px;
+      margin-right: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .stage-DETECTED {
+      background: rgba(255, 92, 92, 0.15);
+      color: var(--red);
+    }
+
+    .stage-DIAGNOSING {
+      background: rgba(79, 209, 232, 0.15);
+      color: var(--cyan);
+    }
+
+    .stage-FIXING {
+      background: rgba(255, 138, 61, 0.15);
+      color: var(--amber);
+    }
+
+    .stage-VALIDATING {
+      background: rgba(62, 213, 152, 0.15);
+      color: var(--green);
+    }
+
+    .stage-OPTIMIZING {
+      background: rgba(91, 141, 239, 0.15);
+      color: var(--blue);
+    }
+
+    .stage-SYSTEM {
+      background: rgba(124, 138, 154, 0.15);
+      color: var(--muted);
+    }
+
+    .auto-log-entry .ts {
+      color: var(--muted);
+      font-size: 10px;
+      margin-right: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width:1080px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber), transparent 60%);
+      opacity: 0.7;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .panel-head h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .panel-head .eyebrow {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* status badge */
+    .status-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .status-NOMINAL {
+      background: rgba(62, 213, 152, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(62, 213, 152, 0.3);
+    }
+
+    .status-WARNING {
+      background: rgba(255, 138, 61, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(255, 138, 61, 0.3);
+    }
+
+    .status-CRITICAL {
+      background: rgba(255, 92, 92, 0.14);
+      color: var(--red);
+      border: 1px solid rgba(255, 92, 92, 0.35);
+      animation: pulse 1.4s infinite;
+    }
+
+    .status-RECOVERING {
+      background: rgba(79, 209, 232, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(79, 209, 232, 0.3);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.55;
+      }
+    }
+
+    /* sensor grid */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .sensor {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 12px 14px;
+    }
+
+    .sensor .label {
+      font-size: 10.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    .sensor .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .sensor .val.warn {
+      color: var(--amber);
+    }
+
+    .sensor .val.crit {
+      color: var(--red);
+    }
+
+    .sensor .val.ok {
+      color: var(--text);
+    }
+
+    canvas {
+      max-height: 220px;
+    }
+
+    /* buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    button {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    button:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--amber), #E8663A);
+      color: #0A0E13;
+      border: none;
+    }
+
+    button.primary:hover {
+      color: #0A0E13;
+      filter: brightness(1.08);
+    }
+
+    button.ghost {
+      background: transparent;
+    }
+
+    select {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    /* trace console */
+    .trace-console {
+      background: #070A0D;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 520px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+    }
+
+    .trace-step {
+      border-left: 2px solid var(--line);
+      padding: 10px 0 10px 16px;
+      margin-bottom: 4px;
+      position: relative;
+      opacity: 0;
+      animation: slideIn 0.4s ease forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .trace-step::before {
+      content: "";
+      position: absolute;
+      left: -5px;
+      top: 14px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
+    }
+
+    .trace-step .step-title {
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .trace-step .step-thought {
+      color: var(--muted);
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    .trace-step .step-detail {
+      color: #9FB0C0;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    .trace-step .latency {
+      color: var(--green);
+      font-size: 11px;
+      float: right;
+    }
+
+    .cite {
+      display: inline-block;
+      background: rgba(79, 209, 232, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(79, 209, 232, 0.3);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin: 2px 3px 2px 0;
+      font-size: 11px;
+    }
+
+    .empty-trace {
+      color: var(--muted);
+      text-align: center;
+      padding: 60px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      padding: 12px;
+      resize: vertical;
+      min-height: 64px;
+    }
+
+    .report-box {
+      background: rgba(255, 138, 61, 0.05);
+      border: 1px solid rgba(255, 138, 61, 0.25);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-top: 14px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .report-box .tag-llm {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .tag-llm.gemini {
+      background: rgba(79, 209, 232, 0.15);
+      color: var(--cyan);
+    }
+
+    .tag-llm.rule {
+      background: rgba(124, 138, 154, 0.15);
+      color: var(--muted);
+    }
+
+    /* metrics */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .metric-card .v {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .metric-card .l {
+      font-size: 10.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-top: 4px;
+    }
+
+    .tool-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .tool-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 12px 14px;
+    }
+
+    .tool-card .num {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--amber);
+      font-size: 11px;
+    }
+
+    .tool-card .name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      margin: 4px 0 4px;
+    }
+
+    .tool-card .desc {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11.5px;
+      padding: 30px 0 10px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 4px;
+    }
+
+    /* ===== ARIA chatbot widget (purely additive — does not affect existing layout) ===== */
+    .aria-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber), var(--red));
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255, 138, 61, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: transform 0.2s ease;
+    }
+
+    .aria-fab:hover {
+      transform: scale(1.08);
+    }
+
+    .aria-fab .fab-dot {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--bg);
+    }
+
+    .aria-panel {
+      position: fixed;
+      bottom: 96px;
+      right: 24px;
+      z-index: 200;
+      width: 380px;
+      max-width: calc(100vw - 48px);
+      height: 520px;
+      max-height: calc(100vh - 140px);
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .aria-panel.open {
+      display: flex;
+    }
+
+    .aria-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 138, 61, 0.06);
+    }
+
+    .aria-head-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .aria-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--amber), var(--red));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: #0A0E13;
+      font-size: 13px;
+    }
+
+    .aria-head h4 {
+      margin: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .aria-head .sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .aria-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .aria-close:hover {
+      color: var(--text);
+    }
+
+    .aria-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .aria-msg {
+      max-width: 85%;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .aria-msg.user {
+      align-self: flex-end;
+      background: rgba(79, 209, 232, 0.15);
+      color: var(--text);
+      border: 1px solid rgba(79, 209, 232, 0.3);
+    }
+
+    .aria-msg.assistant {
+      align-self: flex-start;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .aria-msg.assistant .llm-tag {
+      display: block;
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 5px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .aria-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 16px 10px;
+    }
+
+    .aria-suggestion {
+      font-size: 10.5px;
+      padding: 5px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--panel-2);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .aria-suggestion:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    .aria-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .aria-input-row input {
+      flex: 1;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12.5px;
+      padding: 9px 11px;
+    }
+
+    .aria-input-row button {
+      background: var(--amber);
+      color: #0A0E13;
+      border: none;
+      border-radius: 8px;
+      padding: 0 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .aria-input-row button:hover {
+      filter: brightness(1.08);
+    }
+
+    .aria-typing {
+      align-self: flex-start;
+      font-size: 11px;
+      color: var(--muted);
+      font-style: italic;
+      padding: 0 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">EI</div>
+      <div>
+        <h1>EI-Nexus <span style="color:var(--muted);font-weight:400;">/ Autonomous Engineering Intelligence</span>
+        </h1>
+        <div class="tag">Team MCP Mavericks </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="pill"><span class="dot" id="gemini-dot"></span><span id="gemini-label">checking Gemini…</span></div>
+      <div class="pill"><span class="dot on"></span>Twin: <span id="tick-count" class="mono">0</span> ticks</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <div class="hero">
+      <div>
+        <h3>Monitors. Predicts. Diagnoses. Fixes itself. Validates. Optimizes.</h3>
+        <!-- <p><em style="color:var(--text);">"An agentic AI-powered digital twin that autonomously monitors industrial
+            assets, predicts failures, performs root-cause analysis, orchestrates corrective actions using AI agents,
+            validates recovery, and continuously optimizes operational performance."</em><br><br>
+          Click <strong style="color:var(--amber);">Autonomous Mode</strong> below and step back — the agent runs the
+          entire closed loop itself and narrates every stage live, so you can just point at the screen and explain what
+          it's doing.</p> -->
+      </div>
+      <div class="impact-stat">
+        <div class="big" id="hero-latency">—</div>
+        <div class="small">avg RCA latency (this session)</div>
+      </div>
+    </div>
+
+    <div class="usecase-row">
+      <span class="uc-badge primary"></span>
+      <span class="uc-badge"></span>
+      <span class="uc-badge"></span>
+      <span class="uc-badge"></span>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT COLUMN: Fleet + Digital Twin -->
+      <div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Fleet Overview — Agentic Asset Management</h3>
+            <span class="eyebrow">4 assets, monitored &amp; acted on concurrently</span>
+          </div>
+          <div class="fleet-grid" id="fleet-grid"><!-- filled by JS --></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Digital Twin — <span id="selected-asset-label">MC-2201-001</span></h3>
+            <span class="status-badge status-NOMINAL" id="status-badge">NOMINAL</span>
+          </div>
+
+          <div class="sensor-grid" id="sensor-grid"><!-- filled by JS --></div>
+
+          <canvas id="telemetry-chart" height="90"></canvas>
+
+          <div class="btn-row">
+            <select id="fault-select">
+              <option value="OVERTEMP">Overtemperature</option>
+              <option value="VIBRATION">Excess Vibration</option>
+              <option value="VOLTAGE">Voltage Sag</option>
+              <option value="CURRENT">Current Imbalance</option>
+            </select>
+            <button id="btn-inject">⚠ Inject Fault</button>
+            <button id="btn-fix" class="primary" disabled>✓ Apply Auto-Fix</button>
+            <button id="btn-analyze" class="ghost">🔍 Analyze Root Cause</button>
+            <button id="btn-reset" class="ghost">↺ Reset Fleet</button>
+          </div>
+        </div>
+
+        <div class="panel autonomous-panel">
+          <div class="panel-head">
+            <h3>🤖 Autonomous Mode — Closed-Loop Agent</h3>
+            <span class="eyebrow">the AI runs the whole cycle itself</span>
+          </div>
+
+          <div class="auto-toggle-row">
+            <button class="big-toggle" id="btn-autonomous-toggle">
+              <span class="status-dot"></span> Engage Autonomous Mode
+            </button>
+            <label
+              style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;">
+              <input type="checkbox" id="auto-inject-checkbox" checked style="accent-color:var(--amber);">
+              auto-simulate field failures (walk-away demo)
+            </label>
+          </div>
+
+          <div class="state-flow" id="state-flow">
+            <span class="state-node" data-state="MONITORING">MONITOR</span><span class="state-arrow">→</span>
+            <span class="state-node" data-state="DETECTED">DETECT</span><span class="state-arrow">→</span>
+            <span class="state-node" data-state="DIAGNOSING">DIAGNOSE</span><span class="state-arrow">→</span>
+            <span class="state-node" data-state="FIXING">FIX</span><span class="state-arrow">→</span>
+            <span class="state-node" data-state="VALIDATING">VALIDATE</span><span class="state-arrow">→</span>
+            <span class="state-node" data-state="OPTIMIZING">OPTIMIZE</span>
+          </div>
+
+          <div class="auto-log" id="auto-log">
+            <div class="empty-trace" style="padding:24px 10px;">// autonomous mode is off —<br>click "Engage Autonomous
+              Mode" and the agent will detect,<br>diagnose, fix, validate, and optimize on its own.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>💰 Live Business Impact</h3>
+            <span class="eyebrow">computed from this session's resolved incidents</span>
+          </div>
+          <div class="roi-grid" id="roi-grid">
+            <div class="roi-card">
+              <div class="v">$0</div>
+              <div class="l">Est. Savings</div>
+            </div>
+          </div>
+          <div class="roi-note" id="roi-note">No incidents resolved yet this session — engage Autonomous Mode to start
+            generating impact numbers.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Evaluation Metrics</h3>
+            <span class="eyebrow">vs. naive keyword-search baseline</span>
+          </div>
+          <div class="metric-grid" id="metric-grid">
+            <div class="metric-card">
+              <div class="v">—</div>
+              <div class="l">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>4 MCP Tools</h3>
+            <span class="eyebrow">the reasoning trace, live →</span>
+          </div>
+          <div class="tool-list" id="tool-list"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Agent trace + report -->
+      <div>
+        <div class="panel" style="min-height:640px;">
+          <div class="panel-head">
+            <h3>MCP Root-Cause Agent — Live Reasoning Trace</h3>
+            <span class="eyebrow" id="trace-latency"></span>
+          </div>
+
+          <textarea id="query-input"
+            placeholder="Describe the field failure in plain language, or leave blank to auto-analyze the live twin's current anomaly… e.g. &quot;motor controller running hot and shut itself down after 40 minutes&quot;"></textarea>
+          <div class="btn-row" style="margin-top:10px;">
+            <button id="btn-run-rca" class="primary">▶ Run 4-Tool MCP Agent</button>
+            <label
+              style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;">
+              <input type="checkbox" id="use-llm-checkbox" checked style="accent-color:var(--amber);"> use Gemini
+              synthesis (if configured)
+            </label>
+          </div>
+
+          <div class="trace-console" id="trace-console" style="margin-top:16px;">
+            <div class="empty-trace">// awaiting agent run —<br>click "Run 4-Tool MCP Agent" to trace a field
+              failure<br>to its design root cause, live, with citations.</div>
+          </div>
+
+          <div id="report-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>EI-Nexus Developed by MCP Mavericks</footer>
+  </div>
+
+  <script>
+    let selectedAsset = null; // set once /api/fleet returns
+
+    const SENSOR_META = {
+      temperature: { label: "Temperature", unit: "°C", warn: 75, crit: 95 },
+      vibration: { label: "Vibration", unit: "mm/s", warn: 3.0, crit: 5.0 },
+      load: { label: "Load", unit: "%", warn: 90, crit: 98 },
+      voltage: { label: "Voltage", unit: "V", warn: 220, crit: 200, inverse: true },
+      current: { label: "Current", unit: "A", warn: 38, crit: 44 },
+      fan_speed: { label: "Fan Speed", unit: "%", warn: 999, crit: 999 },
+    };
+
+    let chart;
+    function initChart() {
+      try {
+        const ctx = document.getElementById('telemetry-chart').getContext('2d');
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: [], datasets: [
+              { label: 'Temp (°C)', data: [], borderColor: '#FF8A3D', tension: 0.3, pointRadius: 0, borderWidth: 2 },
+              { label: 'Vibration (mm/s ×10)', data: [], borderColor: '#4FD1E8', tension: 0.3, pointRadius: 0, borderWidth: 2 },
+              { label: 'Voltage (V ÷2)', data: [], borderColor: '#5B8DEF', tension: 0.3, pointRadius: 0, borderWidth: 2 },
+              { label: 'Current (A)', data: [], borderColor: '#3ED598', tension: 0.3, pointRadius: 0, borderWidth: 2 },
+            ]
+          },
+          options: {
+            responsive: true, animation: false,
+            plugins: { legend: { labels: { color: '#7C8A9A', font: { size: 10, family: 'JetBrains Mono' }, boxWidth: 10 } } },
+            scales: {
+              x: { display: false },
+              y: { ticks: { color: '#7C8A9A', font: { size: 10 } }, grid: { color: '#1a2430' } }
+            }
+          }
+        });
+      } catch (e) {
+        // Chart.js failed to load from CDN (e.g. no internet, firewall) — the rest of the
+        // dashboard (fleet, telemetry numbers, autonomous mode, ARIA) must keep working
+        // even without the line chart, so we swallow this rather than let it halt the script.
+        console.warn('Telemetry chart unavailable (Chart.js failed to load):', e);
+        chart = null;
+      }
+    }
+
+    function sensorClass(key, value) {
+      const m = SENSOR_META[key];
+      if (!m || m.warn === 999) return 'ok';
+      if (m.inverse) {
+        if (value <= m.crit) return 'crit';
+        if (value <= m.warn) return 'warn';
+      } else {
+        if (value >= m.crit) return 'crit';
+        if (value >= m.warn) return 'warn';
+      }
+      return 'ok';
+    }
+
+    function renderSensors(state) {
+      const grid = document.getElementById('sensor-grid');
+      grid.innerHTML = '';
+      for (const [key, meta] of Object.entries(SENSOR_META)) {
+        const val = state[key];
+        const cls = sensorClass(key, val);
+        grid.innerHTML += `<div class="sensor">
+      <div class="label">${meta.label}</div>
+      <div class="val ${cls}">${val.toFixed(1)}<span style="font-size:12px;color:var(--muted);"> ${meta.unit}</span></div>
+    </div>`;
+      }
+    }
+
+    function updateChart(history) {
+      if (!chart || !history.length) return;
+      const last = history.slice(-60);
+      chart.data.labels = last.map(h => h.t);
+      chart.data.datasets[0].data = last.map(h => h.temperature);
+      chart.data.datasets[1].data = last.map(h => h.vibration * 10);
+      chart.data.datasets[2].data = last.map(h => h.voltage / 2);
+      chart.data.datasets[3].data = last.map(h => h.current);
+      chart.update('none');
+    }
+
+    async function pollTelemetry() {
+      try {
+        if (!selectedAsset) { setTimeout(pollTelemetry, 500); return; }
+        const res = await fetch('/api/telemetry?asset_id=' + encodeURIComponent(selectedAsset));
+        const data = await res.json();
+        renderSensors(data.state);
+        updateChart(data.history);
+        document.getElementById('tick-count').textContent = data.tick;
+        document.getElementById('selected-asset-label').textContent = data.asset_id + ' · ' + data.site;
+
+        const badge = document.getElementById('status-badge');
+        badge.textContent = data.status;
+        badge.className = 'status-badge status-' + data.status;
+
+        document.getElementById('btn-fix').disabled = !data.active_fault || data.status === 'RECOVERING';
+        document.getElementById('btn-inject').disabled = !!data.active_fault;
+      } catch (e) { console.error(e); }
+      setTimeout(pollTelemetry, 1200);
+    }
+
+    const STATUS_COLOR = { NOMINAL: 'green', WARNING: 'amber', CRITICAL: 'red', RECOVERING: 'cyan' };
+
+    function renderFleet(assets, busyAssets) {
+      const grid = document.getElementById('fleet-grid');
+      if (!selectedAsset) selectedAsset = assets[0].asset_id;
+      grid.innerHTML = assets.map(a => {
+        const sel = a.asset_id === selectedAsset ? 'selected' : '';
+        const busy = (busyAssets || []).includes(a.asset_id) ? '<span class="fc-busy" title="agent is working on this asset"></span>' : '';
+        return `<div class="fleet-card ${sel}" data-asset="${a.asset_id}">
+      ${busy}
+      <div class="fc-id">${a.asset_id}</div>
+      <div class="fc-site">${a.site}</div>
+      <span class="fc-status status-${a.status}">${a.status}</span>
+    </div>`;
+      }).join('');
+      grid.querySelectorAll('.fleet-card').forEach(card => {
+        card.addEventListener('click', () => {
+          selectedAsset = card.dataset.asset;
+          renderFleet(assets, busyAssets);
+        });
+      });
+    }
+
+    async function pollFleet() {
+      try {
+        const res = await fetch('/api/fleet');
+        const assets = await res.json();
+        const autoStatus = await (await fetch('/api/autonomous/status')).json();
+        renderFleet(assets, autoStatus.busy_assets);
+      } catch (e) { console.error(e); }
+      setTimeout(pollFleet, 2000);
+    }
+
+    document.getElementById('btn-inject').addEventListener('click', async () => {
+      const mode = document.getElementById('fault-select').value;
+      await fetch('/api/inject_fault', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ failure_mode: mode, asset_id: selectedAsset }) });
+    });
+    document.getElementById('btn-fix').addEventListener('click', async () => {
+      await fetch('/api/apply_fix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ asset_id: selectedAsset }) });
+    });
+    document.getElementById('btn-reset').addEventListener('click', async () => {
+      await fetch('/api/reset', { method: 'POST' });
+    });
+    document.getElementById('btn-analyze').addEventListener('click', () => {
+      document.getElementById('query-input').value = '';
+      runRCA();
+    });
+    document.getElementById('btn-run-rca').addEventListener('click', runRCA);
+
+    function citesHTML(ids) {
+      if (!ids || !ids.length) return '';
+      return ids.map(id => `<span class="cite">${id}</span>`).join('');
+    }
+
+    async function runRCA() {
+      const btn = document.getElementById('btn-run-rca');
+      const query = document.getElementById('query-input').value.trim();
+      const useLlm = document.getElementById('use-llm-checkbox').checked;
+      btn.disabled = true; btn.textContent = '⏳ Running agent…';
+
+      const consoleEl = document.getElementById('trace-console');
+      consoleEl.innerHTML = '';
+      document.getElementById('report-container').innerHTML = '';
+
+      try {
+        const res = await fetch('/api/analyze_rca', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, use_llm: useLlm })
+        });
+        const data = await res.json();
+        await loadGeminiStatus(); // refresh diagnostics BEFORE rendering so the report box has the real reason
+        renderTrace(data);
+        document.getElementById('trace-latency').textContent = `total ${data.total_latency_ms} ms`;
+        document.getElementById('hero-latency').textContent = data.total_latency_ms + ' ms';
+      } catch (e) {
+        consoleEl.innerHTML = `<div class="empty-trace" style="color:var(--red);">Agent run failed: ${e}</div>`;
+      }
+      btn.disabled = false; btn.textContent = '▶ Run 4-Tool MCP Agent';
+    }
+
+    function renderTrace(data) {
+      const consoleEl = document.getElementById('trace-console');
+      consoleEl.innerHTML = '';
+      data.trace.forEach((step, i) => {
+        const div = document.createElement('div');
+        div.className = 'trace-step';
+        div.style.animationDelay = (i * 0.12) + 's';
+        let detail = '';
+        if (step.tool === 'ticket_search') {
+          detail = step.output.results.map(r => `${r.ticket_id} (${(r.similarity * 100).toFixed(0)}% match) — ${r.failure_mode}, ${r.severity} — "${r.symptom.slice(0, 70)}..."`).join('<br>');
+        } else if (step.tool === 'bom_lookup') {
+          detail = step.output.results.map(r => `${r.component_id} — ${r.component_name} (${r.current_revision}, ${r.supplier})`).join('<br>');
+        } else if (step.tool === 'design_doc_search') {
+          detail = step.output.results.map(r => `${r.doc_id} — ${r.title}`).join('<br>');
+        } else if (step.tool === 'past_fix_retrieval') {
+          detail = step.output.results.map(r => `${r.fix_id} — ${(r.effectiveness_score * 100).toFixed(0)}% effective — ${r.fix_description.slice(0, 80)}...`).join('<br>');
+        } else {
+          detail = 'Grounded synthesis generated below ↓';
+        }
+        div.innerHTML = `
+      <span class="latency">${step.latency_ms}ms</span>
+      <div class="step-title">STEP ${step.step} · ${step.tool.toUpperCase()}</div>
+      <div class="step-thought">${step.thought}</div>
+      <div class="step-detail">${detail || '<em style="color:var(--muted)">no matches</em>'}</div>
+    `;
+        consoleEl.appendChild(div);
+      });
+
+      const reportContainer = document.getElementById('report-container');
+      const llmTag = data.llm_used ? '<span class="tag-llm gemini">✦ Gemini synthesis</span>' : '<span class="tag-llm rule">offline rule-based synthesis</span>';
+      let fallbackReason = '';
+      if (!data.llm_used && geminiDiagnostics.attempted) {
+        const reason = (geminiDiagnostics.http_status ? `HTTP ${geminiDiagnostics.http_status}: ` : '') + (geminiDiagnostics.error || 'unknown error');
+        fallbackReason = `<div style="font-size:11.5px;color:var(--red);margin-top:6px;">⚠ Gemini call failed — ${reason}. Showing offline rule-based synthesis instead.</div>`;
+      } else if (!data.llm_used && !geminiDiagnostics.gemini_configured) {
+        fallbackReason = `<div style="font-size:11.5px;color:var(--muted);margin-top:6px;">No GEMINI_API_KEY configured — see .env.example.</div>`;
+      }
+      reportContainer.innerHTML = `
+    <div class="report-box">
+      ${llmTag}${fallbackReason}<br>
+      <strong style="color:var(--amber);">Inferred failure mode:</strong> ${data.inferred_failure_mode} (confidence ${(data.mode_confidence * 100).toFixed(0)}%)<br><br>
+      ${data.synthesis.replace(/\n/g, '<br>')}
+      <br><br><strong style="color:var(--cyan);">Citations:</strong><br>${citesHTML(data.citations)}
+    </div>
+  `;
+    }
+
+    async function loadMetrics() {
+      try {
+        const res = await fetch('/api/metrics');
+        const data = await res.json();
+        const rag = data.retrieval_eval.rag;
+        const base = data.retrieval_eval.baseline_keyword;
+        const lat = data.rca_pipeline_latency_ms;
+        document.getElementById('metric-grid').innerHTML = `
+      <div class="metric-card"><div class="v">${(rag.precision_at_1 * 100).toFixed(0)}%</div><div class="l">RAG Precision@1</div></div>
+      <div class="metric-card"><div class="v">${(rag.recall_at_k * 100).toFixed(0)}%</div><div class="l">RAG Recall@3</div></div>
+      <div class="metric-card"><div class="v">${(base.precision_at_1 * 100).toFixed(0)}%</div><div class="l">Baseline Precision@1</div></div>
+      <div class="metric-card"><div class="v">${lat.p50 ?? '—'}ms</div><div class="l">RCA Latency P50</div></div>
+    `;
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadTools() {
+      try {
+        const res = await fetch('/api/tools');
+        const data = await res.json();
+        const el = document.getElementById('tool-list');
+        let i = 1;
+        el.innerHTML = Object.entries(data).map(([name, t]) => `
+      <div class="tool-card">
+        <div class="num">TOOL ${i++}</div>
+        <div class="name">${name}</div>
+        <div class="desc">${t.description}</div>
+      </div>`).join('');
+      } catch (e) { console.error(e); }
+    }
+
+    let geminiDiagnostics = {};
+
+    async function loadGeminiStatus() {
+      try {
+        const res = await fetch('/api/gemini_status');
+        const data = await res.json();
+        geminiDiagnostics = data;
+        const dot = document.getElementById('gemini-dot');
+        const label = document.getElementById('gemini-label');
+        const pill = dot.closest('.pill');
+
+        if (!data.gemini_configured) {
+          dot.className = 'dot off'; label.textContent = 'Gemini offline (no key set)';
+          pill.title = 'No GEMINI_API_KEY found in the server environment. Check your .env file is named exactly ".env" (not ".env.txt"), sits next to run.py, and that you restarted "python run.py" after adding it.';
+        } else if (data.attempted === false) {
+          dot.className = 'dot on'; label.textContent = 'Gemini key set (not tested yet)';
+          pill.title = 'A key is configured but no RCA has been run yet this session, so it has not actually been called. Run "Run 4-Tool MCP Agent" with the Gemini checkbox on to test it.';
+        } else if (data.ok) {
+          dot.className = 'dot on'; label.textContent = 'Gemini connected';
+          pill.title = 'Last call succeeded.';
+        } else {
+          dot.className = 'dot off'; label.textContent = 'Gemini call failing — hover for reason';
+          pill.title = (data.http_status ? `HTTP ${data.http_status}: ` : '') + (data.error || 'Unknown error') +
+            '\n\nFalling back to offline rule-based synthesis so the demo keeps working.';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // ---------------------------------------------------------------------
+    // Autonomous Mode
+    // ---------------------------------------------------------------------
+    let autonomousOn = false;
+
+    document.getElementById('btn-autonomous-toggle').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-autonomous-toggle');
+      const autoInject = document.getElementById('auto-inject-checkbox').checked;
+      if (!autonomousOn) {
+        await fetch('/api/autonomous/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ auto_inject: autoInject }) });
+        autonomousOn = true;
+        btn.classList.add('on');
+        btn.innerHTML = '<span class="status-dot"></span> Autonomous Mode ENGAGED — click to stop';
+      } else {
+        await fetch('/api/autonomous/stop', { method: 'POST' });
+        autonomousOn = false;
+        btn.classList.remove('on');
+        btn.innerHTML = '<span class="status-dot"></span> Engage Autonomous Mode';
+      }
+    });
+
+    function stageIcon(stage) {
+      return { DETECTED: '⚠', DIAGNOSING: '🔍', FIXING: '🔧', VALIDATING: '✓', OPTIMIZING: '📈', SYSTEM: '⚙' }[stage] || '•';
+    }
+
+    function renderAutoLog(logEntries) {
+      const el = document.getElementById('auto-log');
+      if (!logEntries.length) {
+        el.innerHTML = '<div class="empty-trace" style="padding:24px 10px;">// autonomous mode is off —<br>click "Engage Autonomous Mode" and the agent will detect,<br>diagnose, fix, validate, and optimize on its own.</div>';
+        return;
+      }
+      el.innerHTML = logEntries.slice().reverse().map(e => {
+        const time = new Date(e.ts * 1000).toLocaleTimeString();
+        return `<div class="auto-log-entry">
+      <span class="ts">${time}</span>
+      <span class="stage-tag stage-${e.stage}">${stageIcon(e.stage)} ${e.stage}</span>
+      ${e.message}
+    </div>`;
+      }).join('');
+    }
+
+    async function loadROI() {
+      try {
+        const res = await fetch('/api/roi');
+        const roi = await res.json();
+        const grid = document.getElementById('roi-grid');
+        grid.innerHTML = `
+      <div class="roi-card"><div class="v">$${Number(roi.total_savings_usd).toLocaleString()}</div><div class="l">Est. Total Savings</div></div>
+      <div class="roi-card"><div class="v">${roi.incidents_resolved}</div><div class="l">Incidents Resolved</div></div>
+      <div class="roi-card"><div class="v">${roi.avg_resolution_seconds}s</div><div class="l">Avg Resolution Time</div></div>
+    `;
+        document.getElementById('roi-note').innerHTML = roi.incidents_resolved > 0
+          ? `Assumptions: traditional RCA ≈ ${roi.assumptions.traditional_rca_hours}hrs (2 weeks) vs. actual session time · downtime cost $${roi.assumptions.downtime_cost_per_hour_usd}/hr · engineer time $${roi.assumptions.engineer_loaded_cost_per_hour_usd}/hr loaded — adjustable in backend/metrics.py`
+          : 'No incidents resolved yet this session — engage Autonomous Mode to start generating impact numbers.';
+      } catch (e) { console.error(e); }
+    }
+
+
+
+    function updateStateFlow(state) {
+      document.querySelectorAll('#state-flow .state-node').forEach(n => {
+        n.classList.toggle('active', n.dataset.state === state);
+      });
+    }
+
+    async function pollAutonomous() {
+      try {
+        const res = await fetch('/api/autonomous/status');
+        const data = await res.json();
+        autonomousOn = data.enabled;
+        const btn = document.getElementById('btn-autonomous-toggle');
+        btn.classList.toggle('on', autonomousOn);
+        btn.innerHTML = autonomousOn
+          ? '<span class="status-dot"></span> Autonomous Mode ENGAGED — click to stop'
+          : '<span class="status-dot"></span> Engage Autonomous Mode';
+        renderAutoLog(data.log);
+        updateStateFlow(data.state);
+      } catch (e) { console.error(e); }
+      setTimeout(pollAutonomous, 1500);
+    }
+
+    initChart();
+    pollFleet();
+    pollTelemetry();
+    pollAutonomous();
+    loadMetrics();
+    loadTools();
+    loadGeminiStatus();
+    loadROI();
+    setInterval(loadMetrics, 15000);
+    setInterval(loadROI, 4000);
+
+    // ---------------------------------------------------------------------
+    // ARIA chatbot widget (purely additive — does not touch any existing
+    // dashboard state or polling loops above this point)
+    // ---------------------------------------------------------------------
+    (function initARIA() {
+      function setup() {
+        const fab = document.getElementById('aria-fab');
+        const panel = document.getElementById('aria-panel');
+        const closeBtn = document.getElementById('aria-close');
+        const messagesEl = document.getElementById('aria-messages');
+        const inputEl = document.getElementById('aria-input');
+        const sendBtn = document.getElementById('aria-send');
+        const suggestionsEl = document.getElementById('aria-suggestions');
+        let opened = false;
+        let historyLoaded = false;
+
+        function addMessage(role, text, usedLlm) {
+          const div = document.createElement('div');
+          div.className = 'aria-msg ' + role;
+          div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+          if (role === 'assistant') {
+            const tag = document.createElement('span');
+            tag.className = 'llm-tag';
+            tag.textContent = usedLlm ? '✦ Gemini' : '⚙ offline rule-based';
+            div.appendChild(tag);
+          }
+          messagesEl.appendChild(div);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+          const d = document.createElement('div');
+          d.textContent = str;
+          return d.innerHTML;
+        }
+
+        function showTyping() {
+          const div = document.createElement('div');
+          div.className = 'aria-typing';
+          div.id = 'aria-typing-indicator';
+          div.textContent = 'ARIA is thinking…';
+          messagesEl.appendChild(div);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+        function hideTyping() {
+          const el = document.getElementById('aria-typing-indicator');
+          if (el) el.remove();
+        }
+
+        async function loadHistoryOnce() {
+          if (historyLoaded) return;
+          historyLoaded = true;
+          try {
+            const res = await fetch('/api/chat/history');
+            const hist = await res.json();
+            if (hist.length === 0) {
+              addMessage('assistant', "Hi, I'm ARIA. Ask me what happened on the fleet, why an asset failed, or how many incidents have been resolved this session.", false);
+            } else {
+              hist.forEach(m => {
+                if (m.role === 'user') addMessage('user', m.text);
+                else addMessage('assistant', m.text, m.used_llm);
+              });
+            }
+          } catch (e) {
+            addMessage('assistant', "Hi, I'm ARIA. Ask me what happened on the fleet, why an asset failed, or how many incidents have been resolved this session.", false);
+          }
+        }
+
+        async function sendMessage(text) {
+          text = (text || inputEl.value).trim();
+          if (!text) return;
+          inputEl.value = '';
+          addMessage('user', text);
+          showTyping();
+          try {
+            const res = await fetch('/api/chat', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: text, use_llm: true })
+            });
+            const data = await res.json();
+            hideTyping();
+            addMessage('assistant', data.reply, data.used_llm);
+          } catch (e) {
+            hideTyping();
+            addMessage('assistant', "I couldn't reach the backend just now — try again in a moment.", false);
+          }
+        }
+
+        fab.addEventListener('click', () => {
+          opened = !opened;
+          panel.classList.toggle('open', opened);
+          if (opened) { loadHistoryOnce(); inputEl.focus(); }
+        });
+        closeBtn.addEventListener('click', () => { opened = false; panel.classList.remove('open'); });
+        sendBtn.addEventListener('click', () => sendMessage());
+        inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+        suggestionsEl.querySelectorAll('.aria-suggestion').forEach(chip => {
+          chip.addEventListener('click', () => sendMessage(chip.dataset.q));
+        });
+      } // end setup()
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setup);
+      } else {
+        setup(); // DOM (including elements added later in the file) is already parsed
+      }
+    })();
+  </script>
+  <!-- ===== ARIA chatbot widget (purely additive) ===== -->
+  <button class="aria-fab" id="aria-fab" title="Ask ARIA about the fleet">
+    💬<span class="fab-dot"></span>
+  </button>
+
+  <div class="aria-panel" id="aria-panel">
+    <div class="aria-head">
+      <div class="aria-head-left">
+        <div class="aria-avatar">AI</div>
+        <div>
+          <h4>ARIA</h4>
+          <div class="sub">Autonomous RCA Intelligence Assistant</div>
+        </div>
+      </div>
+      <button class="aria-close" id="aria-close">✕</button>
+    </div>
+    <div class="aria-messages" id="aria-messages"></div>
+    <div class="aria-suggestions" id="aria-suggestions">
+      <span class="aria-suggestion" data-q="what happened?">what happened?</span>
+      <span class="aria-suggestion" data-q="fleet status?">fleet status?</span>
+      <span class="aria-suggestion" data-q="why did it fail?">why did it fail?</span>
+      <span class="aria-suggestion" data-q="how many incidents?">how many incidents?</span>
+    </div>
+    <div class="aria-input-row">
+      <input type="text" id="aria-input" placeholder="Ask ARIA about the fleet…" autocomplete="off">
+      <button id="aria-send">Send</button>
+    </div>
+  </div>
+
+</body>
+
+</html>

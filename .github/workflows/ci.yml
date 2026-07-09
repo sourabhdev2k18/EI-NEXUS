@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run automated test suite
+        run: python -m unittest discover tests -v
+
+      - name: Validate OpenAPI spec
+        run: |
+          pip install pyyaml
+          python -c "
+          import yaml
+          with open('docs/openapi.yaml') as f:
+              spec = yaml.safe_load(f)
+          assert 'paths' in spec, 'OpenAPI spec missing paths'
+          print(f\"OpenAPI spec valid — {len(spec['paths'])} documented paths\")
+          "
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t ei-nexus-rca:ci .
+
+      - name: Smoke-test the container
+        run: |
+          docker run -d -p 8000:8000 --name ei-nexus-smoke ei-nexus-rca:ci
+          sleep 5
+          curl -sf http://localhost:8000/api/fleet || (docker logs ei-nexus-smoke && exit 1)
+          docker stop ei-nexus-smoke
