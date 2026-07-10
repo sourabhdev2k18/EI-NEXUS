@@ -45,7 +45,7 @@ def ask_llm(
         model=MODEL,
         messages=messages,
         temperature=temperature,
-        max_tokens=2048,
+        max_tokens=400,
     )
 
     return response.choices[0].message.content
