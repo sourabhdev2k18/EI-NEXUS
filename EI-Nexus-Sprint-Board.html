@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EI-Nexus — Sprint Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0E13; --panel:#111820; --panel-2:#161F29; --col-bg:#0D1219;
+  --line:#232E3B; --text:#E7ECF2; --muted:#7C8A9A;
+  --amber:#FF8A3D; --green:#3ED598; --red:#FF5C5C; --cyan:#4FD1E8; --blue:#5B8DEF; --violet:#B18CFF;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
+body{
+  background-image: radial-gradient(circle at 10% 0%, rgba(255,138,61,0.05), transparent 40%),
+                     radial-gradient(circle at 90% 100%, rgba(79,209,232,0.05), transparent 45%);
+  min-height:100vh;
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+
+header{
+  padding:20px 28px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(17,24,32,0.9), rgba(17,24,32,0.5));
+  position:sticky; top:0; z-index:50; backdrop-filter:blur(8px);
+}
+.header-top{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{
+  width:36px; height:36px; border-radius:8px;
+  background:linear-gradient(135deg, var(--amber), var(--red));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; color:#0A0E13; font-size:16px;
+}
+.brand h1{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:0;}
+.brand .tag{font-size:11px; color:var(--muted); margin-top:2px;}
+
+.progress-summary{display:flex; align-items:center; gap:16px;}
+.progress-ring{position:relative; width:56px; height:56px;}
+.progress-ring svg{transform:rotate(-90deg);}
+.progress-ring .pct{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--green);
+}
+.progress-text{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);}
+.progress-text b{color:var(--text); font-size:15px;}
+
+.sprint-bars{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+.sprint-bar{
+  flex:1; min-width:120px; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+  padding:8px 12px;
+}
+.sprint-bar .label{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; display:flex; justify-content:space-between;}
+.sprint-bar .track{height:5px; border-radius:3px; background:var(--line); overflow:hidden;}
+.sprint-bar .fill{height:100%; border-radius:3px;}
+
+.filters{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
+.chip{
+  font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 13px; border-radius:20px;
+  border:1px solid var(--line); color:var(--muted); cursor:pointer; background:var(--panel);
+  transition:all 0.15s ease; user-select:none;
+}
+.chip:hover{border-color:var(--amber); color:var(--text);}
+.chip.active{background:var(--amber); color:#0A0E13; border-color:var(--amber); font-weight:700;}
+
+.toolbar{display:flex; gap:10px; margin-top:14px; align-items:center;}
+button{
+  font-family:'IBM Plex Sans',sans-serif; font-size:12.5px; font-weight:600; padding:8px 14px;
+  border-radius:7px; border:1px solid var(--line); background:var(--panel-2); color:var(--text);
+  cursor:pointer; transition:all 0.15s ease;
+}
+button:hover{border-color:var(--amber); color:var(--amber);}
+button.ghost{background:transparent;}
+button.danger:hover{border-color:var(--red); color:var(--red);}
+
+.board-wrap{padding:20px 28px 60px; max-width:1600px; margin:0 auto;}
+.board{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; align-items:start;}
+@media (max-width:1100px){.board{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:640px){.board{grid-template-columns:1fr;}}
+
+.column{
+  background:var(--col-bg); border:1px solid var(--line); border-radius:12px; padding:14px;
+  min-height:200px;
+}
+.column.drag-over{border-color:var(--amber); background:rgba(255,138,61,0.04);}
+.column-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:0 2px;}
+.column-head h3{font-family:'Space Grotesk',sans-serif; font-size:13.5px; margin:0; text-transform:uppercase; letter-spacing:0.5px;}
+.column-count{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); background:var(--panel);
+  padding:2px 8px; border-radius:10px; border:1px solid var(--line);
+}
+.column-add{
+  width:100%; text-align:left; background:transparent; border:1px dashed var(--line); color:var(--muted);
+  font-size:12px; padding:8px 10px; margin-top:8px; border-radius:8px;
+}
+.column-add:hover{border-color:var(--amber); color:var(--amber);}
+
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:11px 12px;
+  margin-bottom:10px; cursor:grab; position:relative; transition:all 0.15s ease;
+}
+.card:hover{border-color:#3a4a5c; transform:translateY(-1px);}
+.card.dragging{opacity:0.4;}
+.card.dimmed{opacity:0.25; filter:grayscale(0.6);}
+.card .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:6px;}
+.sprint-tag{
+  font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; padding:2px 7px;
+  border-radius:5px; white-space:nowrap;
+}
+.card-title{font-size:13px; font-weight:600; color:var(--text); margin:0 0 4px; line-height:1.35;}
+.card-desc{font-size:11px; color:var(--muted); line-height:1.4; margin:0;}
+.card-del{
+  background:none; border:none; color:var(--muted); font-size:14px; cursor:pointer; padding:0 2px;
+  line-height:1; opacity:0; transition:opacity 0.15s;
+}
+.card:hover .card-del{opacity:1;}
+.card-del:hover{color:var(--red);}
+
+.empty-col{color:var(--muted); font-size:11.5px; text-align:center; padding:20px 10px; font-style:italic;}
+
+/* modal */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:100;
+}
+.modal-backdrop.open{display:flex;}
+.modal{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:22px; width:420px; max-width:90vw;
+}
+.modal h3{font-family:'Space Grotesk',sans-serif; margin:0 0 14px; font-size:16px;}
+.modal label{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; display:block; margin:12px 0 5px;}
+.modal input, .modal textarea, .modal select{
+  width:100%; background:var(--panel); border:1px solid var(--line); border-radius:7px; color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif; font-size:13px; padding:9px 10px;
+}
+.modal textarea{min-height:60px; resize:vertical;}
+.modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
+
+footer{text-align:center; color:var(--muted); font-size:11px; padding:20px 0; font-family:'JetBrains Mono',monospace;}
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-mark">EI</div>
+      <div>
+        <h1>EI-Nexus <span style="color:var(--muted); font-weight:400;">/ Sprint Board</span></h1>
+        <div class="tag">Team MCP Mavericks · LTTS OpenHack 2026 · GOH-UC-034</div>
+      </div>
+    </div>
+    <div class="progress-summary">
+      <div class="progress-ring">
+        <svg width="56" height="56">
+          <circle cx="28" cy="28" r="24" fill="none" stroke="#232E3B" stroke-width="6"></circle>
+          <circle id="ring-fill" cx="28" cy="28" r="24" fill="none" stroke="#3ED598" stroke-width="6" stroke-linecap="round"></circle>
+        </svg>
+        <div class="pct" id="ring-pct">0%</div>
+      </div>
+      <div class="progress-text"><b id="done-count">0</b> / <span id="total-count">0</span> tasks complete</div>
+    </div>
+  </div>
+
+  <div class="sprint-bars" id="sprint-bars"></div>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="toolbar">
+    <button class="ghost" id="btn-reset">↺ Reset board to seed data</button>
+    <span style="font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;">state saved locally in this browser — safe to refresh mid-demo</span>
+  </div>
+</header>
+
+<div class="board-wrap">
+  <div class="board" id="board"><!-- columns injected by JS --></div>
+</div>
+
+<footer>EI-Nexus Sprint Board · offline, single file, no backend required · built for LTTS OpenHack 2026</footer>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h3>Add a card</h3>
+    <label>Title</label>
+    <input type="text" id="modal-title" placeholder="e.g. Add voice assistant prototype">
+    <label>Description (optional)</label>
+    <textarea id="modal-desc" placeholder="Short note about this task"></textarea>
+    <label>Sprint / tag</label>
+    <select id="modal-sprint"></select>
+    <div class="modal-actions">
+      <button class="ghost" id="modal-cancel">Cancel</button>
+      <button id="modal-save" style="background:var(--amber); color:#0A0E13; border:none;">Add card</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLUMNS = [
+  { id: "backlog", title: "Backlog" },
+  { id: "todo", title: "To Do" },
+  { id: "inprogress", title: "In Progress" },
+  { id: "done", title: "Done" },
+];
+
+const SPRINTS = {
+  "sprint0": { label: "Sprint 0", color: "#8B98A8" },
+  "sprint1": { label: "Sprint 1", color: "#5B8DEF" },
+  "sprint2": { label: "Sprint 2", color: "#4FD1E8" },
+  "sprint3": { label: "Sprint 3", color: "#FF8A3D" },
+  "sprint4": { label: "Sprint 4", color: "#3ED598" },
+  "roadmap": { label: "Roadmap", color: "#B18CFF" },
+};
+
+const SEED = [
+  // Sprint 0 — Ideation & Scoping (Done)
+  { id: "c1", title: "Problem framing & Big Bet alignment", desc: "Mapped GOH-UC-034/010/046/065 to the pitch.", sprint: "sprint0", col: "done" },
+  { id: "c2", title: "AEIT positioning statement", desc: "Reframed from 'predictive maintenance tool' to autonomous agent.", sprint: "sprint0", col: "done" },
+  { id: "c3", title: "Data model design", desc: "Tickets, BOM specs, design docs, past fixes schema.", sprint: "sprint0", col: "done" },
+
+  // Sprint 1 — Core Simulation (Done)
+  { id: "c4", title: "Digital twin engine", desc: "6-signal telemetry simulation per asset.", sprint: "sprint1", col: "done" },
+  { id: "c5", title: "Fault injection system", desc: "4 failure modes with realistic drift curves.", sprint: "sprint1", col: "done" },
+  { id: "c6", title: "Hybrid anomaly detector", desc: "Rule-based thresholds + rolling z-score statistics.", sprint: "sprint1", col: "done" },
+
+  // Sprint 2 — MCP Agent + RAG (Done)
+  { id: "c7", title: "4 MCP tools implemented", desc: "Ticket search, BOM lookup, design-doc RAG, past-fix retrieval.", sprint: "sprint2", col: "done" },
+  { id: "c8", title: "TF-IDF RAG engine", desc: "Dependency-free retrieval, offline by design.", sprint: "sprint2", col: "done" },
+  { id: "c9", title: "Gemini synthesis + fallback", desc: "Optional LLM narrative, deterministic offline fallback.", sprint: "sprint2", col: "done" },
+
+  // Sprint 3 — Autonomous Loop (Done)
+  { id: "c10", title: "Autonomous closed-loop agent", desc: "Monitor → Detect → Diagnose → Fix → Validate → Optimize.", sprint: "sprint3", col: "done" },
+  { id: "c11", title: "Fleet expansion to 4 assets", desc: "Concurrent multi-asset monitoring and action.", sprint: "sprint3", col: "done" },
+  { id: "c12", title: "Self-tightening detection thresholds", desc: "Fleet-wide learning after repeat incidents.", sprint: "sprint3", col: "done" },
+
+  // Sprint 4 — Harden & Demo-Ready
+  { id: "c13", title: "Concurrency stress testing", desc: "75-second fleet-wide autonomous stress test.", sprint: "sprint4", col: "done" },
+  { id: "c14", title: "False-positive bug found & fixed", desc: "Variance floor + actionability guard in the detector.", sprint: "sprint4", col: "done" },
+  { id: "c15", title: "ROI / business impact calculator", desc: "Live dollar figures from resolved incidents.", sprint: "sprint4", col: "done" },
+  { id: "c16", title: "UML design doc + diagrams", desc: "Class, sequence, state, component, deployment diagrams.", sprint: "sprint4", col: "done" },
+  { id: "c17", title: "Hackathon pitch deck", desc: "17 slides with speaker notes.", sprint: "sprint4", col: "done" },
+  { id: "c18", title: "Gemini quota troubleshooting", desc: "Diagnostics surfaced in UI instead of buried in terminal.", sprint: "sprint4", col: "inprogress" },
+  { id: "c19", title: "Sprint board (this!)", desc: "Trello-style board to show process during the demo.", sprint: "sprint4", col: "inprogress" },
+  { id: "c20", title: "Live demo dry run #2", desc: "Full run-through with the 12-point pre-demo checklist.", sprint: "sprint4", col: "todo" },
+
+  // Roadmap / Backlog
+  { id: "c21", title: "Auth + per-plant data isolation", desc: "Stage 2 deployment requirement.", sprint: "roadmap", col: "todo" },
+  { id: "c22", title: "Kubernetes deployment manifests", desc: "Stage 3 fleet-scale platform.", sprint: "roadmap", col: "backlog" },
+  { id: "c23", title: "Real vector DB (FAISS/Chroma)", desc: "Swap-in replacement for TF-IDF at scale.", sprint: "roadmap", col: "backlog" },
+  { id: "c24", title: "SAP/CMMS ticket ingestion", desc: "Live ticket pipeline instead of synthetic seed data.", sprint: "roadmap", col: "backlog" },
+  { id: "c25", title: "Computer-vision inspection", desc: "90-day roadmap item.", sprint: "roadmap", col: "backlog" },
+  { id: "c26", title: "Voice-enabled maintenance assistant", desc: "90-day roadmap item.", sprint: "roadmap", col: "backlog" },
+  { id: "c27", title: "Mobile app for field engineers", desc: "90-day roadmap item.", sprint: "roadmap", col: "backlog" },
+];
+
+const STORAGE_KEY = "einexus-kanban-v1";
+let state = { cards: [], activeFilter: "all" };
+let draggedCardId = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.cards) && parsed.cards.length) {
+        state.cards = parsed.cards;
+        return;
+      }
+    }
+  } catch (e) { console.warn("Could not load saved board, using seed data.", e); }
+  state.cards = JSON.parse(JSON.stringify(SEED));
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ cards: state.cards })); }
+  catch (e) { console.warn("Could not save board state.", e); }
+}
+
+function resetToSeed() {
+  state.cards = JSON.parse(JSON.stringify(SEED));
+  saveState();
+  render();
+}
+
+function renderFilters() {
+  const el = document.getElementById("filters");
+  const chips = [{ id: "all", label: "All" }, ...Object.entries(SPRINTS).map(([id, s]) => ({ id, label: s.label }))];
+  el.innerHTML = chips.map(c => `<span class="chip ${state.activeFilter === c.id ? "active" : ""}" data-filter="${c.id}">${c.label}</span>`).join("");
+  el.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      state.activeFilter = chip.dataset.filter;
+      render();
+    });
+  });
+}
+
+function renderSprintBars() {
+  const el = document.getElementById("sprint-bars");
+  el.innerHTML = Object.entries(SPRINTS).map(([id, s]) => {
+    const cards = state.cards.filter(c => c.sprint === id);
+    const done = cards.filter(c => c.col === "done").length;
+    const pct = cards.length ? Math.round((done / cards.length) * 100) : 0;
+    return `<div class="sprint-bar">
+      <div class="label"><span>${s.label}</span><span>${pct}%</span></div>
+      <div class="track"><div class="fill" style="width:${pct}%; background:${s.color};"></div></div>
+    </div>`;
+  }).join("");
+}
+
+function renderProgressRing() {
+  const total = state.cards.length;
+  const done = state.cards.filter(c => c.col === "done").length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const circumference = 2 * Math.PI * 24;
+  const offset = circumference * (1 - pct / 100);
+  const ring = document.getElementById("ring-fill");
+  ring.setAttribute("stroke-dasharray", circumference.toFixed(1));
+  ring.setAttribute("stroke-dashoffset", offset.toFixed(1));
+  document.getElementById("ring-pct").textContent = pct + "%";
+  document.getElementById("done-count").textContent = done;
+  document.getElementById("total-count").textContent = total;
+}
+
+function cardMatchesFilter(card) {
+  return state.activeFilter === "all" || card.sprint === state.activeFilter;
+}
+
+function renderBoard() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  for (const col of COLUMNS) {
+    const cards = state.cards.filter(c => c.col === col.id);
+    const colEl = document.createElement("div");
+    colEl.className = "column";
+    colEl.dataset.col = col.id;
+    colEl.innerHTML = `
+      <div class="column-head">
+        <h3>${col.title}</h3>
+        <span class="column-count">${cards.length}</span>
+      </div>
+      <div class="card-list"></div>
+      <button class="column-add" data-col="${col.id}">+ Add card</button>
+    `;
+    const list = colEl.querySelector(".card-list");
+    if (!cards.length) {
+      list.innerHTML = `<div class="empty-col">No cards here</div>`;
+    }
+    for (const card of cards) {
+      const sprint = SPRINTS[card.sprint] || { label: card.sprint, color: "#8B98A8" };
+      const dimmed = !cardMatchesFilter(card);
+      const cardEl = document.createElement("div");
+      cardEl.className = "card" + (dimmed ? " dimmed" : "");
+      cardEl.draggable = true;
+      cardEl.dataset.id = card.id;
+      cardEl.innerHTML = `
+        <div class="card-top">
+          <span class="sprint-tag" style="background:${sprint.color}22; color:${sprint.color}; border:1px solid ${sprint.color}55;">${sprint.label}</span>
+          <button class="card-del" data-id="${card.id}" title="Delete card">✕</button>
+        </div>
+        <p class="card-title">${card.title}</p>
+        ${card.desc ? `<p class="card-desc">${card.desc}</p>` : ""}
+      `;
+      cardEl.addEventListener("dragstart", () => {
+        draggedCardId = card.id;
+        cardEl.classList.add("dragging");
+      });
+      cardEl.addEventListener("dragend", () => cardEl.classList.remove("dragging"));
+      list.appendChild(cardEl);
+    }
+    colEl.addEventListener("dragover", (e) => { e.preventDefault(); colEl.classList.add("drag-over"); });
+    colEl.addEventListener("dragleave", () => colEl.classList.remove("drag-over"));
+    colEl.addEventListener("drop", (e) => {
+      e.preventDefault();
+      colEl.classList.remove("drag-over");
+      if (draggedCardId) {
+        const card = state.cards.find(c => c.id === draggedCardId);
+        if (card) { card.col = col.id; saveState(); render(); }
+      }
+    });
+    board.appendChild(colEl);
+  }
+
+  board.querySelectorAll(".card-del").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      state.cards = state.cards.filter(c => c.id !== btn.dataset.id);
+      saveState();
+      render();
+    });
+  });
+  board.querySelectorAll(".column-add").forEach(btn => {
+    btn.addEventListener("click", () => openModal(btn.dataset.col));
+  });
+}
+
+function render() {
+  renderFilters();
+  renderSprintBars();
+  renderProgressRing();
+  renderBoard();
+}
+
+// ---- Add-card modal ----
+let modalTargetCol = "backlog";
+function openModal(col) {
+  modalTargetCol = col;
+  const sprintSelect = document.getElementById("modal-sprint");
+  sprintSelect.innerHTML = Object.entries(SPRINTS).map(([id, s]) => `<option value="${id}">${s.label}</option>`).join("");
+  document.getElementById("modal-title").value = "";
+  document.getElementById("modal-desc").value = "";
+  document.getElementById("modal-backdrop").classList.add("open");
+  document.getElementById("modal-title").focus();
+}
+function closeModal() { document.getElementById("modal-backdrop").classList.remove("open"); }
+
+document.getElementById("modal-cancel").addEventListener("click", closeModal);
+document.getElementById("modal-backdrop").addEventListener("click", (e) => {
+  if (e.target.id === "modal-backdrop") closeModal();
+});
+document.getElementById("modal-save").addEventListener("click", () => {
+  const title = document.getElementById("modal-title").value.trim();
+  if (!title) return;
+  const desc = document.getElementById("modal-desc").value.trim();
+  const sprint = document.getElementById("modal-sprint").value;
+  state.cards.push({ id: "c" + Date.now(), title, desc, sprint, col: modalTargetCol });
+  saveState();
+  closeModal();
+  render();
+});
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  if (confirm("Reset the board to the original seed data? Any manual changes will be lost.")) {
+    resetToSeed();
+  }
+});
+
+loadState();
+render();
+</script>
+</body>
+</html>

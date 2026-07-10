@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "EI-Nexus",
+    "slug": "ei-nexus-rn",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0A0E13"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.einexus.rn"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0E13"
+      },
+      "package": "com.einexus.rn"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "apiBaseUrl": "https://ei-nexus.onrender.com/api"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
